@@ -1,34 +1,48 @@
 ---
 // src/pages/16-sanity-cms.astro
+export const prerender = false // Mengaktifkan Live SSR di arsitektur Astro modern
 
-export const prerender = false
-
-import Layout from '../layouts/Layout.astro' // Sesuaikan path layout lo
+import Layout from '../layouts/Layout.astro'
 import { sanityClient } from '../utils/sanity'
 
-// 1. QUERY GROQ: Mengambil semua dokumen ber-tipe 'tour' dari Sanity Cloud
-const tours = await sanityClient.fetch(`*[_type == "tour"]{
+// QUERY GROQ: Menarik data secara dinamis dari cloud Sanity setiap kali halaman di-refresh
+let tours = []
+let errorMessage = null
+
+try {
+  tours = await sanityClient.fetch(`*[_type == "tour"] | order(_createdAt desc){
+    _id,
+    name,
+    "slug": slug.current,
+    price,
+    description
+  }`)
+} catch (error: any) {
+  errorMessage = error.message
+}
+
+const codeSnippet = `// 1. Inisialisasi Sanity Client (src/utils/sanity.ts)
+import { createClient } from '@sanity/client';
+
+export const sanityClient = createClient({
+  projectId: import.meta.env.PUBLIC_SANITY_PROJECT_ID,
+  dataset: 'production',
+  useCdn: false, // false selama dev/testing agar data langsung fresh tanpa cache
+  apiVersion: '2024-03-01',
+});
+
+// 2. Mengambil Data Menggunakan GROQ Query di Frontmatter Astro
+// File: src/pages/travel-cms.astro (Wajib pasang: export const prerender = false)
+const tours = await sanityClient.fetch(\`*[_type == "tour"]{
   _id,
   name,
   "slug": slug.current,
   price,
   description
-}`)
-
-const codeSnippet = `// 1. Cara Fetch Data via GROQ di Astro Backend (src/pages/travel.astro)
-import { createClient } from '@sanity/client';
-
-const client = createClient({
-  projectId: 'PROJECT_ID_LO',
-  dataset: 'production',
-  useCdn: true,
-  apiVersion: '2024-03-01'
-});
-
-const tours = await client.fetch(\`*[_type == "tour"]{ name, price, description }\`);`
+}\`);`
 ---
 
-<Layout title="16. CMS Integration (Sanity) - Blueprint UI">
+<Layout title="16. Headless CMS Integration (Sanity) - Blueprint UI">
   <main
     class="bg-slate-955 mx-auto max-w-4xl px-4 py-12 font-sans text-slate-100"
   >
@@ -39,33 +53,43 @@ const tours = await client.fetch(\`*[_type == "tour"]{ name, price, description 
           >16. KOMPLEKS</span
         >
         <h1 class="text-2xl font-bold tracking-tight text-white">
-          Headless CMS (Sanity) Integration
+          Headless CMS Integration
         </h1>
       </div>
-      <p class="text-sm text-slate-400">
-        Menghubungkan Astro dengan Headless CMS cloud. Mengambil arsitektur data
-        travel secara dinamis menggunakan mesin *query* **GROQ** untuk proses
-        render serverless instant.
+      <p class="text-sm leading-relaxed text-slate-400">
+        Memisahkan manajemen konten dari repositori kode utama. Fitur ini
+        mendemonstrasikan integrasi penuh antara framework Astro (Frontend)
+        dengan Sanity.io (Headless CMS) secara awan menggunakan metode **Live
+        Serverless SSR** dan bahasa *query* **GROQ** untuk menyajikan data
+        secara dinamis dan seketika (*instant updates*).
       </p>
     </header>
 
-    <section class="mb-12" aria-labelledby="preview-title">
+    <section class="mb-6" aria-labelledby="preview-title">
       <h2
         id="preview-title"
         class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
       >
-        Live Data Render From Sanity Cloud
+        Live Data Preview from Cloud
       </h2>
 
       <div
         class="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 shadow-inner"
       >
         {
-          tours.length === 0 ? (
+          errorMessage && (
+            <div class="rounded-xl border border-rose-500/20 bg-rose-500/10 p-4 font-mono text-xs text-rose-400">
+              ⚠️ Gagal memuat data Sanity: {errorMessage}
+            </div>
+          )
+        }
+
+        {
+          !errorMessage && tours.length === 0 ? (
             <div class="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 py-8 text-center">
               <p class="text-xs text-slate-500 italic">
-                Data kosong, pastikan lo sudah klik Publish data di
-                localhost:3333 ya bro...
+                Data kosong atau token salah, pastikan lo sudah mem-publish
+                dokumen di Sanity Studio, bro...
               </p>
             </div>
           ) : (
@@ -77,18 +101,23 @@ const tours = await client.fetch(\`*[_type == "tour"]{ name, price, description 
                       <h3 class="text-xs leading-snug font-bold text-white transition-colors group-hover:text-rose-400">
                         {tour.name}
                       </h3>
-                      <span class="rounded border border-rose-500/20 bg-rose-500/10 px-1.5 py-0.5 font-mono text-[8px] text-rose-400">
+                      <span
+                        class="max-w-30 truncate rounded border border-rose-500/20 bg-rose-500/10 px-1.5 py-0.5 font-mono text-[8px] text-rose-400"
+                        title={tour.slug}
+                      >
                         /{tour.slug}
                       </span>
                     </div>
                     <p class="mt-2 line-clamp-3 text-[11px] leading-relaxed text-slate-400">
                       {tour.description ||
-                        'Tidak ada deskripsi singkat yang dimasukkan di dasbor Sanity.'}
+                        'Tidak ada deskripsi singkat yang dicantumkan untuk paket ini.'}
                     </p>
                   </div>
 
                   <div class="mt-4 flex items-center justify-between border-t border-slate-950 pt-3">
-                    <span class="text-[10px] text-slate-500">Harga Tiket:</span>
+                    <span class="text-[10px] text-slate-500">
+                      Estimasi Biaya:
+                    </span>
                     <span class="font-mono text-xs font-bold text-emerald-400">
                       Rp {Number(tour.price).toLocaleString('id-ID')}
                     </span>
@@ -101,12 +130,29 @@ const tours = await client.fetch(\`*[_type == "tour"]{ name, price, description 
       </div>
     </section>
 
+    <section class="mb-12 flex justify-center">
+      <a
+        href="https://coba-fitur.sanity.studio"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="group inline-flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-4 py-2 text-xs font-medium text-slate-300 shadow-sm transition-all hover:bg-slate-800 hover:text-white active:scale-95"
+      >
+        <i
+          class="fa-solid fa-sliders text-rose-400 transition-transform group-hover:rotate-12"
+        ></i>
+        Buka Akses Dashboard Sanity Studio
+        <i
+          class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"
+        ></i>
+      </a>
+    </section>
+
     <section class="mb-12" aria-labelledby="code-title">
       <h2
         id="code-title"
         class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
       >
-        Clean Code Integration Blueprint
+        Clean Code Pipeline
       </h2>
       <article x-data="codeCopier" class="group relative">
         <button
@@ -124,6 +170,72 @@ const tours = await client.fetch(\`*[_type == "tour"]{ name, price, description 
         <pre
           class="h-100 overflow-auto rounded-2xl border border-slate-800 bg-slate-900 p-5 pr-20 font-mono text-xs leading-relaxed text-slate-300"><code>{codeSnippet}</code></pre>
       </article>
+    </section>
+
+    <section
+      class="border-t border-slate-900 pt-8"
+      aria-labelledby="docs-title"
+    >
+      <h2
+        id="docs-title"
+        class="mb-4 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Edukasi Arsitektur & Cara Kerja
+      </h2>
+
+      <div class="space-y-4 text-xs leading-relaxed text-slate-400">
+        <div class="rounded-xl border border-slate-900 bg-slate-900/20 p-4">
+          <h3
+            class="mb-1.5 flex items-center gap-2 text-xs font-bold text-white"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-rose-400"></span> 1. Mengapa
+            Memakai Headless CMS?
+          </h3>
+          <p>
+            Pada web tradisional, untuk mengganti teks atau menambah produk, lo
+            wajib mengubah file HTML atau melakukan *re-push* kode ke GitHub.
+            Dengan Headless CMS, basis data diletakkan terpisah di cloud.
+            Anggota tim non-teknis bisa mengisi data lewat dasbor admin visual,
+            sementara developer bebas merancang tampilan tanpa terikat database
+            lokal.
+          </p>
+        </div>
+
+        <div class="rounded-xl border border-slate-900 bg-slate-900/20 p-4">
+          <h3
+            class="mb-1.5 flex items-center gap-2 text-xs font-bold text-white"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-sky-400"></span> 2. Mekanisme
+            Kerja GROQ Query
+          </h3>
+          <p>
+            Berbeda dengan REST API konvensional yang menarik seluruh sampah
+            data yang tidak perlu, **GROQ (Graph Relational Object Queries)**
+            bawaan Sanity memungkinkan frontend meminta properti data spesifik
+            saja yang dibutuhkan oleh komponen (misal cuma minta `name` dan
+            `price`). Hal ini menghemat ukuran payload transmisi jaringan secara
+            radikal.
+          </p>
+        </div>
+
+        <div class="rounded-xl border border-slate-900 bg-slate-900/20 p-4">
+          <h3
+            class="mb-1.5 flex items-center gap-2 text-xs font-bold text-white"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span> 3. Transisi
+            dari Static (SSG) ke Live SSR
+          </h3>
+          <p>
+            Secara bawaan, Astro bersifat statis demi mengejar kecepatan
+            optimal. Namun, untuk aplikasi dengan sirkulasi data tinggi, kita
+            memasang komponen adapter serverless (seperti `@astrojs/vercel`) dan
+            menambahkan penanda `export const prerender = false;`. Konfigurasi
+            ini memberi instruksi kepada *edge server* untuk selalu melakukan
+            pengambilan data segar ke pusat CMS setiap kali ada kunjungan
+            halaman baru.
+          </p>
+        </div>
+      </div>
     </section>
 
     <footer class="mt-12 border-t border-slate-900 pt-6">

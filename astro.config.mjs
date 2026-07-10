@@ -15,7 +15,7 @@ export default defineConfig({
   //   format: 'directory',
   // },
 
-  output: 'hybrid',
+  output: 'static',
 
   adapter: vercel(),
 

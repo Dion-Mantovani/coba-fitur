@@ -1,0 +1,306 @@
+---
+// src/pages/14-scroll-animation.astro
+import Layout from '../layouts/Layout.astro' // Sesuaikan path layout lo
+
+// Simpan kodingan produksi universal ke string agar siap disalin
+const codeSnippet = `<script is:inline>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('scrollReveal', () => ({
+      revealed: false,
+      init() {
+        // Mendeteksi Intersection Observer berdasarkan viewport window global
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              this.revealed = true;
+              observer.unobserve(entry.target); // Stop pantau jika sudah mekar sekali (performa optimal)
+            }
+          });
+        }, {
+          threshold: 0.15 // Aktif saat 15% area elemen masuk ke layar
+        });
+        observer.observe(this.$el);
+      }
+    }));
+  });
+</script>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-12">
+
+  <div
+    x-data="scrollReveal"
+    :class="revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'"
+    class="transform transition-all duration-700 ease-out p-6 bg-slate-900 border border-slate-800 rounded-2xl"
+  >
+    <div class="text-amber-400 text-lg mb-2"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+    <h3 class="text-sm font-bold text-white">Fade Up Smooth</h3>
+    <p class="text-xs text-slate-400 mt-1">Sangat ideal untuk mementaskan elemen grid layout, baris teks artikel, atau kartu pricing secara elegan.</p>
+  </div>
+
+  <div
+    x-data="scrollReveal"
+    :class="revealed ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-16'"
+    class="transform transition-all duration-700 ease-out p-6 bg-slate-900 border border-slate-800 rounded-2xl"
+  >
+    <div class="text-sky-400 text-lg mb-2"><i class="fa-solid fa-arrow-right-to-bracket"></i></div>
+    <h3 class="text-sm font-bold text-white">Slide From Left</h3>
+    <p class="text-xs text-slate-400 mt-1">Cocok untuk menonjolkan visual gambar di sisi kiri atau daftar list poin fitur utama produk.</p>
+  </div>
+
+  <div
+    x-data="scrollReveal"
+    :class="revealed ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-16'"
+    class="transform transition-all duration-700 ease-out p-6 bg-slate-900 border border-slate-800 rounded-2xl"
+  >
+    <div class="text-purple-400 text-lg mb-2"><i class="fa-solid fa-arrow-left-to-bracket"></i></div>
+    <h3 class="text-sm font-bold text-white">Slide From Right</h3>
+    <p class="text-xs text-slate-400 mt-1">Digunakan bersamaan dengan efek kiri sebagai penyeimbang ritme arah gerak visual mata pembaca.</p>
+  </div>
+
+  <div
+    x-data="scrollReveal"
+    :class="revealed ? 'opacity-100 scale-100' : 'opacity-0 scale-90'"
+    class="transform transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) p-6 bg-slate-900 border border-slate-800 rounded-2xl"
+  >
+    <div class="text-emerald-400 text-lg mb-2"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+    <h3 class="text-sm font-bold text-white">Scale Bounce Pop</h3>
+    <p class="text-xs text-slate-400 mt-1">Efek mekar memantul yang sangat mencuri perhatian. Sempurna dipasang pada tombol aksi CTA utama atau lencana diskon.</p>
+  </div>
+
+</div>`
+---
+
+<Layout title="14. Scroll Entrance Animation - Blueprint UI">
+  <main
+    class="bg-slate-955 mx-auto max-w-4xl px-4 py-12 font-sans text-slate-100"
+  >
+    <header class="mb-8 border-b border-slate-800 pb-6">
+      <div class="mb-2 flex items-center gap-3">
+        <span
+          class="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-amber-400"
+          >14. MENENGAH</span
+        >
+        <h1 class="text-2xl font-bold tracking-tight text-white">
+          Scroll Entrance Animation
+        </h1>
+      </div>
+      <p class="text-sm text-slate-400">
+        Paket animasi deteksi gulir halaman (*scroll entrance reveal*) ultra
+        ringan memanfaatkan <code class="font-mono text-amber-400"
+          >IntersectionObserver</code
+        > dengan konfigurasi target root spesifik.
+      </p>
+    </header>
+
+    <section class="mb-12" aria-labelledby="preview-title">
+      <h2
+        id="preview-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Live Preview (Scroll di Dalam Boks Ini, Bro!)
+      </h2>
+
+      <div
+        id="sandboxScrollContainer"
+        class="h-96 overflow-y-auto scroll-smooth rounded-2xl border border-slate-800 bg-slate-900/40 p-6 shadow-inner"
+      >
+        <div
+          class="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 py-4 text-center"
+        >
+          <p class="animate-pulse text-xs text-slate-500">
+            <i class="fa-solid fa-arrow-down mr-1"></i> Scroll ke bawah di dalam kotak
+            ini untuk memicu animasi...
+          </p>
+        </div>
+
+        <div class="py-40"></div>
+
+        <div class="mx-auto max-w-xl space-y-6 pb-12">
+          <div
+            x-data="scrollRevealLocal"
+            :class="revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'"
+            class="flex transform items-center gap-4 rounded-xl border border-slate-800 bg-slate-900 p-5 transition-all duration-700 ease-out"
+          >
+            <div
+              class="flex h-10 w-10 items-center justify-center rounded-lg border border-amber-500/30 bg-amber-500/10 text-sm text-amber-400"
+            >
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <div>
+              <h4 class="text-xs font-bold text-white">
+                Efek 01: Fade Up Smooth
+              </h4>
+              <p class="mt-0.5 text-[11px] text-slate-400">
+                Mekar mulus bergeser naik tipis saat tersentuh sensor gulir.
+              </p>
+            </div>
+          </div>
+
+          <div
+            x-data="scrollRevealLocal"
+            :class="revealed ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-16'"
+            class="flex transform items-center gap-4 rounded-xl border border-slate-800 bg-slate-900 p-5 transition-all duration-700 ease-out"
+            x-cloak
+          >
+            <div
+              class="flex h-10 w-10 items-center justify-center rounded-lg border border-sky-500/30 bg-sky-500/10 text-sm text-sky-400"
+            >
+              <i class="fa-solid fa-arrow-right-to-bracket"></i>
+            </div>
+            <div>
+              <h4 class="text-xs font-bold text-white">
+                Efek 02: Slide From Left
+              </h4>
+              <p class="mt-0.5 text-[11px] text-slate-400">
+                Muncul meluncur dari sisi kiri area frame kontainer.
+              </p>
+            </div>
+          </div>
+
+          <div
+            x-data="scrollRevealLocal"
+            :class="revealed ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-16'"
+            class="flex transform items-center gap-4 rounded-xl border border-slate-800 bg-slate-900 p-5 transition-all duration-700 ease-out"
+            x-cloak
+          >
+            <div
+              class="flex h-10 w-10 items-center justify-center rounded-lg border border-purple-500/30 bg-purple-500/10 text-sm text-purple-400"
+            >
+              <i class="fa-solid fa-arrow-left-to-bracket"></i>
+            </div>
+            <div>
+              <h4 class="text-xs font-bold text-white">
+                Efek 03: Slide From Right
+              </h4>
+              <p class="mt-0.5 text-[11px] text-slate-400">
+                Sisi penyeimbang kanan, meluncur presisi masuk ke tengah.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-900 pt-4 text-center">
+          <button
+            onclick="document.getElementById('sandboxScrollContainer').scrollTop = 0; setTimeout(() => window.location.reload(), 300);"
+            class="rounded-lg border border-slate-700/60 bg-slate-800 px-3 py-1.5 text-[10px] font-medium text-slate-300 transition-all hover:bg-slate-700 active:scale-95"
+          >
+            <i class="fa-solid fa-rotate-right mr-1"></i> Gulir ke Atas & Reset Sensor
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-12" aria-labelledby="code-title">
+      <h2
+        id="code-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Clean Code (Production Ready)
+      </h2>
+      <article x-data="codeCopier" class="group relative">
+        <button
+          @click="copy()"
+          :class="copied ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900'"
+          class="absolute top-3 right-3 z-10 flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-medium backdrop-blur-sm transition-all duration-200 active:scale-95"
+        >
+          <i x-show="!copied" class="fa-regular fa-copy text-sm"></i>
+          <i
+            x-show="copied"
+            class="fa-solid fa-check text-sm text-emerald-400"
+            x-cloak></i>
+          <span x-text="copied ? 'Copied!' : 'Copy'"></span>
+        </button>
+        <pre
+          class="h-100 overflow-auto rounded-2xl border border-slate-800 bg-slate-900 p-5 pr-20 font-mono text-xs leading-relaxed text-slate-300"><code>{codeSnippet}</code></pre>
+      </article>
+    </section>
+
+    <section aria-labelledby="doc-title">
+      <h2
+        id="doc-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Dokumentasi Logika
+      </h2>
+      <article
+        class="space-y-4 rounded-2xl border border-slate-800/60 bg-slate-900/50 p-5 text-xs leading-relaxed text-slate-400 md:text-sm"
+      >
+        <p>
+          <strong class="text-slate-200"
+            >1. Alur Kerja Intersection Observer:</strong
+          > Daripada memantau event gulir jendela global (<code
+            class="font-mono text-slate-300"
+            >window.addEventListener('scroll')</code
+          >) yang boros konsumsi CPU karena berjalan ratusan kali per detik,
+          kita menugaskan browser mendeteksi koordinat lewat objek pengamat
+          internal. Logika <code class="font-mono text-yellow-400"
+            >observer.unobserve(entry.target)</code
+          > menyetop pemantauan seketika setelah transisi dipicu agar performa *frame
+          rate* website lo tetep stabil **60fps** tanpa patah-patah.
+        </p>
+        <p>
+          <strong class="text-slate-200"
+            >2. Manipulasi Kelas Transisi Tailwind:</strong
+          > Modul ini mengandalkan kombinasi transisi utility CSS. Pola kodenya dijaga
+          lewat binding reaktif <code class="font-mono text-slate-300"
+            >:class="revealed ? 'opacity-100' : 'opacity-0'"</code
+          >. Pengamanan kode teks bebas dari error compiler berkat pemakaian
+          entitas HTML terisolasi.
+        </p>
+      </article>
+    </section>
+
+    <footer class="mt-12 border-t border-slate-900 pt-6">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 text-xs text-slate-500 transition-colors hover:text-white"
+      >
+        ← Kembali ke Dashboard Sandbox
+      </a>
+    </footer>
+  </main>
+</Layout>
+
+<script is:inline>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('scrollRevealLocal', () => ({
+      revealed: false,
+      init() {
+        const containerNode = document.getElementById('sandboxScrollContainer')
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                this.revealed = true
+                observer.unobserve(entry.target)
+              }
+            })
+          },
+          {
+            root: containerNode, // KUNCI UTAMA: Sensor membaca scroll boks ini, bukan window!
+            threshold: 0.1,
+          },
+        )
+
+        observer.observe(this.$el)
+      },
+    }))
+  })
+</script>
+
+<script define:vars={{ codeSnippet }}>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('codeCopier', () => ({
+      copied: false,
+      codeText: codeSnippet,
+      copy() {
+        navigator.clipboard.writeText(this.codeText)
+        this.copied = true
+        setTimeout(() => {
+          this.copied = false
+        }, 2000)
+      },
+    }))
+  })
+</script>

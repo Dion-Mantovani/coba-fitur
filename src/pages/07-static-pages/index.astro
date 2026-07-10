@@ -1,0 +1,187 @@
+---
+// src/pages/status-pages/index.astro
+import Layout from '../../layouts/Layout.astro' // Sesuaikan naik 2 tingkat karena sekarang di dalam folder
+
+// Simpan kodingan produksi universal untuk Halaman 404
+const code404 = `<!-- Halaman 404 (Production Ready) -->
+<div class="min-h-screen bg-slate-950 flex flex-col items-center justify-center px-4 font-sans text-slate-100">
+  <div class="text-center max-w-md">
+    <!-- Icon / Visual -->
+    <div class="inline-flex w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/30 items-center justify-center text-rose-400 mb-6 text-2xl animate-pulse">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+    </div>
+    <!-- Teks -->
+    <h1 class="text-6xl font-black text-white tracking-tight mb-2">404</h1>
+    <h2 class="text-lg font-bold text-slate-200 mb-4">Halaman Tidak Ditemukan</h2>
+    <p class="text-sm text-slate-400 leading-relaxed mb-8">
+      Maaf, halaman yang lo cari gak ada atau udah dipindahin ke alamat lain. Coba cek lagi URL-nya ya, bro!
+    </p>
+    <!-- Action -->
+    <a href="/" class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-semibold rounded-xl text-white transition-colors">
+      <i class="fa-solid fa-arrow-left"></i> Kembali ke Beranda
+    </a>
+  </div>
+</div>`
+
+// Simpan kodingan produksi universal untuk Halaman Thank You
+const codeThankYou = `<!-- Halaman Thank You (Production Ready) -->
+<div class="min-h-screen bg-slate-950 flex flex-col items-center justify-center px-4 font-sans text-slate-100">
+  <div class="text-center max-w-md">
+    <!-- Icon / Visual -->
+    <div class="inline-flex w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 items-center justify-center text-emerald-400 mb-6 text-2xl">
+      <i class="fa-solid fa-circle-check"></i>
+    </div>
+    <!-- Teks -->
+    <h1 class="text-3xl font-black text-white tracking-tight mb-2">Terima Kasih!</h1>
+    <h2 class="text-sm font-medium text-slate-400 mb-6">Aksi atau Pembayaran Lo Berhasil Diterima</h2>
+    <p class="text-sm text-slate-400 leading-relaxed mb-8">
+      Data formulir atau transaksi lo udah aman masuk ke sistem kita. Kabar konfirmasi selanjutnya bakal langsung dikirim via email.
+    </p>
+    <!-- Action -->
+    <a href="/" class="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-600 text-xs font-semibold rounded-xl text-white shadow-lg shadow-sky-500/20 transition-all active:scale-95">
+      Lanjut ke Dashboard
+    </a>
+  </div>
+</div>`
+---
+
+<Layout title="07. Status Pages (404 & Thank You) - Blueprint UI">
+  <main
+    class="bg-slate-955 mx-auto max-w-4xl px-4 py-12 font-sans text-slate-100"
+  >
+    <!-- HEADER -->
+    <header class="mb-8 border-b border-slate-800 pb-6">
+      <div class="mb-2 flex items-center gap-3">
+        <span
+          class="rounded-md border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-sky-400"
+          >07. MUDAH</span
+        >
+        <h1 class="text-2xl font-bold tracking-tight text-white">
+          404 & Thank You Pages
+        </h1>
+      </div>
+    </header>
+
+    <!-- SECTION 1: Live Preview Navigation (Jalur Href Relatif Sesama Folder) -->
+    <section class="mb-12" aria-labelledby="preview-title">
+      <h2
+        id="preview-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Live Preview Navigation
+      </h2>
+
+      <div
+        class="flex w-full flex-col items-center justify-center gap-4 rounded-2xl border border-slate-800 bg-slate-900/40 p-8 text-center shadow-inner sm:flex-row"
+      >
+        <!-- Mengarah ke /07-static-pages/404 -->
+        <a
+          href="/07-static-pages/halaman-asal"
+          class="flex w-full items-center justify-center gap-2 rounded-xl border border-rose-500/30 bg-rose-600/10 px-6 py-3 text-xs font-semibold text-rose-400 transition-all duration-200 hover:bg-rose-600/20 active:scale-95 sm:w-auto"
+        >
+          <i class="fa-solid fa-ghost"></i> Buka Halaman 404 Demo
+        </a>
+
+        <!-- Mengarah ke /07-static-pages/thank-you -->
+        <a
+          href="/07-static-pages/thank-you"
+          class="flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-600/10 px-6 py-3 text-xs font-semibold text-emerald-400 transition-all duration-200 hover:bg-emerald-600/20 active:scale-95 sm:w-auto"
+        >
+          <i class="fa-solid fa-heart"></i> Buka Halaman Thank You Demo
+        </a>
+      </div>
+    </section>
+
+    <!-- SECTION 2: Code Snippet Block 404 -->
+    <section class="mb-12" aria-labelledby="code-404-title">
+      <h2
+        id="code-404-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Clean Code: 404 Page Template
+      </h2>
+      <article x-data="codeCopier404" class="group relative">
+        <button
+          @click="copy()"
+          :class="copied ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900'"
+          class="absolute top-3 right-3 z-10 flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-medium backdrop-blur-sm transition-all duration-200 active:scale-95"
+        >
+          <i x-show="!copied" class="fa-regular fa-copy text-sm"></i>
+          <i
+            x-show="copied"
+            class="fa-solid fa-check text-sm text-emerald-400"
+            x-cloak></i>
+          <span x-text="copied ? 'Copied!' : 'Copy'"></span>
+        </button>
+        <pre
+          class="h-100 overflow-auto rounded-2xl border border-slate-800 bg-slate-900 p-5 pr-20 font-mono text-xs leading-relaxed text-slate-300"><code>{code404}</code></pre>
+      </article>
+    </section>
+
+    <!-- SECTION 3: Code Snippet Block Thank You -->
+    <section class="mb-12" aria-labelledby="code-thanks-title">
+      <h2
+        id="code-thanks-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Clean Code: Thank You Page Template
+      </h2>
+      <article x-data="codeCopierThanks" class="group relative">
+        <button
+          @click="copy()"
+          :class="copied ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900'"
+          class="absolute top-3 right-3 z-10 flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-medium backdrop-blur-sm transition-all duration-200 active:scale-95"
+        >
+          <i x-show="!copied" class="fa-regular fa-copy text-sm"></i>
+          <i
+            x-show="copied"
+            class="fa-solid fa-check text-sm text-emerald-400"
+            x-cloak></i>
+          <span x-text="copied ? 'Copied!' : 'Copy'"></span>
+        </button>
+        <pre
+          class="h-100 overflow-auto rounded-2xl border border-slate-800 bg-slate-900 p-5 pr-20 font-mono text-xs leading-relaxed text-slate-300"><code>{codeThankYou}</code></pre>
+      </article>
+    </section>
+
+    <!-- Tombol Kembali ke Dashboard Utama Sandbox -->
+    <footer class="mt-12 border-t border-slate-900 pt-6">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 text-xs text-slate-500 transition-colors hover:text-white"
+      >
+        ← Kembali ke Dashboard Sandbox
+      </a>
+    </footer>
+  </main>
+</Layout>
+
+<script define:vars={{ code404, codeThankYou }}>
+  document.addEventListener('alpine:init', () => {
+    // Copier untuk 404
+    Alpine.data('codeCopier404', () => ({
+      copied: false,
+      codeText: code404,
+      copy() {
+        navigator.clipboard.writeText(this.codeText)
+        this.copied = true
+        setTimeout(() => {
+          this.copied = false
+        }, 2000)
+      },
+    }))
+
+    // Copier untuk Thank You
+    Alpine.data('codeCopierThanks', () => ({
+      copied: false,
+      codeText: codeThankYou,
+      copy() {
+        navigator.clipboard.writeText(this.codeText)
+        this.copied = true
+        setTimeout(() => {
+          this.copied = false
+        }, 2000)
+      },
+    }))
+  })
+</script>

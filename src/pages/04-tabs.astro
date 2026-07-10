@@ -1,0 +1,265 @@
+---
+// src/pages/04-tabs.astro
+import Layout from '../layouts/Layout.astro' // Sesuaikan path layout lo
+
+// Simpan kodingan produksi universal ke string agar siap disalin
+const codeSnippet = `<!-- Komponen Tabs Navigation Universal -->
+<div x-data="{ currentTab: 'features' }" class="w-full max-w-2xl mx-auto">
+
+  <!-- Tab List / Tombol Navigasi -->
+  <div class="flex p-1 bg-slate-950 border border-slate-800 rounded-xl mb-6">
+    <button
+      @click="currentTab = 'features'"
+      :class="currentTab === 'features' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'"
+      class="flex-1 py-2.5 text-sm font-medium rounded-lg transition-all duration-200"
+    >
+      Features
+    </button>
+    <button
+      @click="currentTab = 'pricing'"
+      :class="currentTab === 'pricing' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'"
+      class="flex-1 py-2.5 text-sm font-medium rounded-lg transition-all duration-200"
+    >
+      Pricing
+    </button>
+    <button
+      @click="currentTab = 'spec'"
+      :class="currentTab === 'spec' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'"
+      class="flex-1 py-2.5 text-sm font-medium rounded-lg transition-all duration-200"
+    >
+      Specifications
+    </button>
+  </div>
+
+  <!-- Tab Panels / Area Konten -->
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 min-h-[150px]">
+
+    <!-- Panel 1: Features -->
+    <div
+      x-show="currentTab === 'features'"
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0 scale-98"
+      x-transition:enter-end="opacity-100 scale-100"
+      class="space-y-2"
+    >
+      <h3 class="text-base font-semibold text-white">Core Features</h3>
+      <p class="text-sm text-slate-400 leading-relaxed">
+        Engineered with clean HTML5 semantic elements, utility-first Tailwind CSS classes, and reactive lightweight Alpine.js architecture.
+      </p>
+    </div>
+
+    <!-- Panel 2: Pricing -->
+    <div
+      x-show="currentTab === 'pricing'"
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0 scale-98"
+      x-transition:enter-end="opacity-100 scale-100"
+      class="space-y-2"
+      x-cloak
+    >
+      <h3 class="text-base font-semibold text-white">Flexible Pricing</h3>
+      <p class="text-sm text-slate-400 leading-relaxed">
+        No hidden fees. Scale your application infrastructure seamlessly with predictable, pay-as-you-grow global cloud deployment models.
+      </p>
+    </div>
+
+    <!-- Panel 3: Specifications -->
+    <div
+      x-show="currentTab === 'spec'"
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0 scale-98"
+      x-transition:enter-end="opacity-100 scale-100"
+      class="space-y-2"
+      x-cloak
+    >
+      <h3 class="text-base font-semibold text-white">Technical Specs</h3>
+      <p class="text-sm text-slate-400 leading-relaxed">
+        Optimized build times via Vite compiler, lightweight 0kb JavaScript footprint at initialization, and flawless cross-browser compatibility.
+      </p>
+    </div>
+
+  </div>
+</div>`
+---
+
+<Layout title="04. Tabs Navigation - Blueprint UI">
+  <main
+    class="bg-slate-955 mx-auto max-w-4xl px-4 py-12 font-sans text-slate-100"
+  >
+    <!-- HEADER: Judul & Deskripsi Fitur -->
+    <header class="mb-8 border-b border-slate-800 pb-6">
+      <div class="mb-2 flex items-center gap-3">
+        <span
+          class="rounded-md border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-sky-400"
+          >04. MUDAH</span
+        >
+        <h1 class="text-2xl font-bold tracking-tight text-white">
+          Tabs Detail
+        </h1>
+      </div>
+      <p class="text-sm text-slate-400">
+        Sistem pemindah panel konten (*tab switcher*) hemat ruang yang
+        interaktif. Menggunakan sinkronisasi string data untuk mencocokkan
+        tombol aktif dengan panel konten yang tepat secara instan.
+      </p>
+    </header>
+
+    <!-- SECTION 1: Live Preview Playground -->
+    <section class="mb-12" aria-labelledby="preview-title">
+      <h2
+        id="preview-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Live Preview
+      </h2>
+
+      <!-- Container Sandbox Box -->
+      <div
+        class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 shadow-inner"
+      >
+        <div x-data="{ currentTab: 'demo-1' }" class="mx-auto w-full max-w-xl">
+          <!-- Tombol Navigasi Internal -->
+          <div
+            class="mb-4 flex rounded-xl border border-slate-800 bg-slate-950 p-1"
+          >
+            <button
+              @click="currentTab = 'demo-1'"
+              :class="currentTab === 'demo-1' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'"
+              class="flex-1 rounded-lg py-2 text-xs font-medium transition-all duration-200"
+            >
+              Overview
+            </button>
+            <button
+              @click="currentTab = 'demo-2'"
+              :class="currentTab === 'demo-2' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'"
+              class="flex-1 rounded-lg py-2 text-xs font-medium transition-all duration-200"
+            >
+              Benefits
+            </button>
+          </div>
+
+          <!-- Konten Internal Panel -->
+          <div
+            class="min-h-27.5 rounded-xl border border-slate-800 bg-slate-900 p-5"
+          >
+            <div
+              x-show="currentTab === 'demo-1'"
+              x-transition:enter="transition duration-200"
+              x-transition:enter-start="opacity-0"
+              x-transition:enter-end="opacity-100"
+            >
+              <h4 class="mb-1 text-xs font-bold text-sky-400">
+                Universal Blueprint
+              </h4>
+              <p class="text-xs leading-relaxed text-slate-400">
+                Komponen ini murni bersifat umum, lo bisa pasang konten apa aja
+                di dalamnya tanpa terikat jenis niche bisnis tertentu.
+              </p>
+            </div>
+            <div
+              x-show="currentTab === 'demo-2'"
+              x-transition:enter="transition duration-200"
+              x-transition:enter-start="opacity-0"
+              x-transition:enter-end="opacity-100"
+              x-cloak
+            >
+              <h4 class="mb-1 text-xs font-bold text-emerald-400">
+                Keuntungan Struktur
+              </h4>
+              <p class="text-xs leading-relaxed text-slate-400">
+                User tidak perlu membuang kuota data untuk pindah halaman
+                website (reload) hanya demi membaca detail segmen informasi
+                kecil.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: Code Snippet Block (Siap Salin) -->
+    <section class="mb-12" aria-labelledby="code-title">
+      <h2
+        id="code-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Clean Code (Production Ready)
+      </h2>
+      <article x-data="codeCopier" class="group relative">
+        <button
+          @click="copy()"
+          :class="copied ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900'"
+          class="absolute top-3 right-3 z-10 flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-medium backdrop-blur-sm transition-all duration-200 active:scale-95"
+          aria-label="Salin kode"
+        >
+          <i x-show="!copied" class="fa-regular fa-copy text-sm"></i>
+          <i
+            x-show="copied"
+            class="fa-solid fa-check text-sm text-emerald-400"
+            x-cloak></i>
+          <span x-text="copied ? 'Copied!' : 'Copy'"></span>
+        </button>
+
+        <pre
+          class="h-100 overflow-auto rounded-2xl border border-slate-800 bg-slate-900 p-5 pr-20 font-mono text-xs leading-relaxed text-slate-300"><code>{codeSnippet}</code></pre>
+      </article>
+    </section>
+
+    <!-- SECTION 3: Dokumentasi & Catatan Teknis -->
+    <section aria-labelledby="doc-title">
+      <h2
+        id="doc-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Dokumentasi Logika
+      </h2>
+      <article
+        class="space-y-4 rounded-2xl border border-slate-800/60 bg-slate-900/50 p-5 text-xs leading-relaxed text-slate-400 md:text-sm"
+      >
+        <p>
+          <strong class="text-slate-200">1. Pencocokan State String:</strong> Berbeda
+          dengan accordion yang memakai ID angka, sistem tab ini lebih fleksibel memakai
+          *string name* seperti <code class="font-mono text-yellow-400"
+            >currentTab: 'features'</code
+          >. Ini bikin kode lo jauh lebih mudah dibaca saat merawat banyak panel
+          konten.
+        </p>
+        <p>
+          <strong class="text-slate-200">2. Efek Transisi Pop-Up Mikro:</strong> Modifikator
+          <code class="font-mono text-slate-300"
+            >x-transition:enter-start="opacity-0 scale-98"</code
+          > memberikan sensasi visual konten seolah-olah membesar halus dari latar
+          belakang sebesar 2% piksel saat muncul, bukan sekadar memudar kaku.
+        </p>
+      </article>
+    </section>
+
+    <!-- Tombol Kembali -->
+    <footer class="mt-12 border-t border-slate-900 pt-6">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 text-xs text-slate-500 transition-colors hover:text-white"
+      >
+        ← Kembali ke Dashboard Sandbox
+      </a>
+    </footer>
+  </main>
+</Layout>
+
+<!-- Script Logic Handler Salin -->
+<script define:vars={{ codeSnippet }}>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('codeCopier', () => ({
+      copied: false,
+      codeText: codeSnippet,
+
+      copy() {
+        navigator.clipboard.writeText(this.codeText)
+        this.copied = true
+        setTimeout(() => {
+          this.copied = false
+        }, 2000)
+      },
+    }))
+  })
+</script>

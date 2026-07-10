@@ -1,0 +1,240 @@
+---
+// src/pages/09-media-embed.astro
+import Layout from '../layouts/Layout.astro' // Sesuaikan path layout lo
+
+// Simpan kodingan produksi universal ke string agar siap disalin
+const codeSnippet = `<!-- 1. YouTube Responsive Embed -->
+<div class="w-full max-w-2xl mx-auto mb-8">
+  <div class="aspect-video w-full rounded-2xl border border-slate-800 overflow-hidden bg-slate-950">
+    <iframe
+      class="w-full h-full"
+      src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+      title="YouTube video player"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowfullscreen
+    ></iframe>
+  </div>
+</div>
+
+<!-- 2. Google Maps Responsive Embed -->
+<div class="w-full max-w-2xl mx-auto mb-8">
+  <div class="w-full h-96 rounded-2xl border border-slate-800 overflow-hidden bg-slate-950">
+   <iframe
+    src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d15869.105395265531!2d106.61571111691892!3d-6.093428317295629!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sid!2sid!4v1783343568315!5m2!1sid!2sid"
+    width="600"
+    height="450"
+    style="border:0;"
+    allowfullscreen=""
+    loading="lazy"
+    referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  </div>
+</div>
+
+<!-- 3. Instagram Post Embed -->
+<div class="w-full max-w-sm mx-auto">
+  <div class="bg-slate-900 border border-slate-800 p-2 rounded-2xl shadow-xl">
+    <blockquote
+      class="instagram-media w-full m-0"
+      data-instgrm-permalink="https://www.instagram.com/p/DFhQd8OSLz_/"
+      data-instgrm-version="14"
+    >
+    </blockquote>
+    <script async src="//www.instagram.com/embed.js"></script>
+  </div>
+</div>`
+---
+
+<Layout title="09. Media Embed (YouTube, Maps, IG) - Blueprint UI">
+  <main
+    class="bg-slate-955 mx-auto max-w-4xl px-4 py-12 font-sans text-slate-100"
+  >
+    <!-- HEADER -->
+    <header class="mb-8 border-b border-slate-800 pb-6">
+      <div class="mb-2 flex items-center gap-3">
+        <span
+          class="rounded-md border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-sky-400"
+          >09. MUDAH</span
+        >
+        <h1 class="text-2xl font-bold tracking-tight text-white">
+          Responsive Media Embeds
+        </h1>
+      </div>
+      <p class="text-sm text-slate-400">
+        Integrasi media pihak ketiga yang responsif. Menggunakan utilitas aspek
+        rasio modern, filter estetik gelap untuk Google Maps, dan script injeksi
+        untuk Instagram.
+      </p>
+    </header>
+
+    <!-- SECTION 1: Live Preview Playground -->
+    <section class="mb-12" aria-labelledby="preview-title">
+      <h2
+        id="preview-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Live Preview Navigation
+      </h2>
+
+      <!-- Grid Layout untuk Ketiga Media -->
+      <div
+        class="space-y-8 rounded-2xl border border-slate-800 bg-slate-900/40 p-6 shadow-inner"
+      >
+        <!-- Tab Kontrol Preview Lokal -->
+        <div x- x-data="{ currentMedia: 'yt' }" class="w-full">
+          <div
+            class="mx-auto mb-6 flex max-w-md rounded-xl border border-slate-800 bg-slate-950 p-1"
+          >
+            <button
+              @click="currentMedia = 'yt'"
+              :class="currentMedia === 'yt' ? 'bg-slate-800 text-white' : 'text-slate-500'"
+              class="flex-1 rounded-lg py-2 text-xs font-medium transition-all"
+              >YouTube</button
+            >
+            <button
+              @click="currentMedia = 'maps'"
+              :class="currentMedia === 'maps' ? 'bg-slate-800 text-white' : 'text-slate-500'"
+              class="flex-1 rounded-lg py-2 text-xs font-medium transition-all"
+              >Google Maps</button
+            >
+            <button
+              @click="currentMedia = 'ig'"
+              :class="currentMedia === 'ig' ? 'bg-slate-800 text-white' : 'text-slate-500'"
+              class="flex-1 rounded-lg py-2 text-xs font-medium transition-all"
+              >Instagram</button
+            >
+          </div>
+
+          <!-- Wadah Konten Preview -->
+          <div class="flex min-h-75 w-full items-center justify-center">
+            <!-- Preview YouTube -->
+            <div
+              x-show="currentMedia === 'yt'"
+              class="aspect-video w-full max-w-xl overflow-hidden rounded-xl border border-slate-800 bg-slate-950"
+            >
+              <iframe
+                class="h-full w-full"
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                title="YouTube"
+                allowfullscreen></iframe>
+            </div>
+
+            <!-- Preview Maps (Dengan Trik Dark Mode Keren lewat Filter Tailwind) -->
+            <div
+              x-show="currentMedia === 'maps'"
+              class="h-80 w-full max-w-xl overflow-hidden rounded-xl border border-slate-800 bg-slate-950"
+              x-cloak
+            >
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d15869.105395265531!2d106.61571111691892!3d-6.093428317295629!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sid!2sid!4v1783343568315!5m2!1sid!2sid"
+                width="600"
+                height="450"
+                style="border:0;"
+                allowfullscreen=""
+                loading="lazy"
+                referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            </div>
+
+            <!-- Preview Instagram (REVISI: Tinggi alami, bebas scrollbar) -->
+            <div
+              x-show="currentMedia === 'ig'"
+              class="w-full max-w-sm rounded-xl border border-slate-800 bg-slate-900 p-2 shadow-2xl"
+              x-cloak
+            >
+              <blockquote
+                class="instagram-media m-0 w-full"
+                data-instgrm-permalink="https://www.instagram.com/dion.site/"
+                data-instgrm-version="14"
+              >
+              </blockquote>
+              <script async src="//www.instagram.com/embed.js"></script>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: Code Snippet Block -->
+    <section class="mb-12" aria-labelledby="code-title">
+      <h2
+        id="code-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Clean Code (Production Ready)
+      </h2>
+      <article x-data="codeCopier" class="group relative">
+        <button
+          @click="copy()"
+          :class="copied ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900'"
+          class="absolute top-3 right-3 z-10 flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-medium backdrop-blur-sm transition-all duration-200 active:scale-95"
+        >
+          <i x-show="!copied" class="fa-regular fa-copy text-sm"></i>
+          <i
+            x-show="copied"
+            class="fa-solid fa-check text-sm text-emerald-400"
+            x-cloak></i>
+          <span x-text="copied ? 'Copied!' : 'Copy'"></span>
+        </button>
+        <pre
+          class="h-100 overflow-auto rounded-2xl border border-slate-800 bg-slate-900 p-5 pr-20 font-mono text-xs leading-relaxed text-slate-300"><code>{codeSnippet}</code></pre>
+      </article>
+    </section>
+
+    <!-- SECTION 3: Dokumentasi & Catatan Teknis -->
+    <section aria-labelledby="doc-title">
+      <h2
+        id="doc-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Dokumentasi Logika
+      </h2>
+      <article
+        class="space-y-4 rounded-2xl border border-slate-800/60 bg-slate-900/50 p-5 text-xs leading-relaxed text-slate-400 md:text-sm"
+      >
+        <p>
+          <strong class="text-slate-200">1. Trik Dark Mode Google Maps:</strong> Karena
+          widget embed resmi Google Maps tidak menyediakan opsi tema gelap bawaan,
+          kita akalin menggunakan kombinasi utility class filter CSS milik Tailwind
+          v4: <code class="font-mono text-yellow-400"
+            >filter grayscale invert opacity-80 contrast-125</code
+          >. Trik ini membalikkan warna peta bawaan secara instan agar menyatu
+          sempurna dengan skema UI gelap (*dark theme*) website lo.
+        </p>
+        <p>
+          <strong class="text-slate-200"
+            >2. Aspek Rasio Otomatis (`aspect-video`):</strong
+          > Untuk YouTube, pembungkus luar diberi kelas <code
+            class="font-mono text-slate-300">aspect-video</code
+          > sedangkan iframe di set ke lebar dan tinggi penuh (100%). Skema ini menjamin
+          video lo tetap proporsional ($16:9$) di layar lebar monitor maupun di layar
+          tegak *smartphone* tanpa terpotong.
+        </p>
+      </article>
+    </section>
+
+    <!-- Tombol Kembali -->
+    <footer class="mt-12 border-t border-slate-900 pt-6">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 text-xs text-slate-500 transition-colors hover:text-white"
+      >
+        ← Kembali ke Dashboard Sandbox
+      </a>
+    </footer>
+  </main>
+</Layout>
+
+<script define:vars={{ codeSnippet }}>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('codeCopier', () => ({
+      copied: false,
+      codeText: codeSnippet,
+      copy() {
+        navigator.clipboard.writeText(this.codeText)
+        this.copied = true
+        setTimeout(() => {
+          this.copied = false
+        }, 2000)
+      },
+    }))
+  })
+</script>

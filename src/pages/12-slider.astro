@@ -1,0 +1,301 @@
+---
+// src/pages/13-carousel-slider.astro
+import Layout from '../layouts/Layout.astro' // Sesuaikan path layout lo
+
+// Simpan kodingan produksi universal ke string agar siap disalin
+const codeSnippet = `<div
+  x-data="{
+    activeSlide: 0,
+    totalSlides: 3,
+    autoplayTimer: null,
+
+    // Fungsi Nyalakan Auto Slide (Interval 3 Detik)
+    startAutoplay() {
+      this.stopAutoplay(); // Bersihkan timer lama jika ada
+      this.autoplayTimer = setInterval(() => {
+        this.next(false); // Parameter false artinya auto-slide bukan klik manual
+      }, 3000);
+    },
+
+    // Fungsi Matikan Auto Slide
+    stopAutoplay() {
+      if (this.autoplayTimer) {
+        clearInterval(this.autoplayTimer);
+        this.autoplayTimer = null;
+      }
+    },
+
+    next(manual = true) {
+      // Jika diklik manual oleh user, reset interval biar durasi muter dari nol lagi
+      if (manual) this.startAutoplay();
+      this.activeSlide = (this.activeSlide + 1) % this.totalSlides;
+    },
+
+    prev() {
+      this.startAutoplay(); // Reset interval saat klik manual prev
+      this.activeSlide = (this.activeSlide - 1 + this.totalSlides) % this.totalSlides;
+    },
+
+    goTo(index) {
+      this.startAutoplay(); // Reset interval saat klik manual dots
+      this.activeSlide = index;
+    }
+  }"
+  x-init="startAutoplay()"
+  class="w-full max-w-2xl mx-auto font-sans text-slate-100"
+>
+  <div
+    @mouseenter="stopAutoplay()"
+    @mouseleave="startAutoplay()"
+    class="relative bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl group"
+  >
+    <div class="relative h-64 sm:h-80 overflow-hidden">
+      <div class="flex h-full transition-transform duration-500 ease-out" :style="\`transform: translateX(-\${activeSlide * 100}%)\`">
+        </div>
+    </div>
+
+    <button @click="prev()" class="absolute left-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-xl bg-slate-950/60 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+    <button @click="next(true)" class="absolute right-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-xl bg-slate-950/60 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+  </div>
+
+  <div class="flex items-center justify-center gap-2 mt-4">
+    <template x-for="(slide, index) in totalSlides" :key="index">
+      <button @click="goTo(index)" :class="activeSlide === index ? 'w-5 bg-purple-500' : 'w-2 bg-slate-800'" class="h-2 rounded-full transition-all duration-300"></button>
+    </template>
+  </div>
+</div>`
+---
+
+<Layout title="13. Carousel Slider (Autoplay) - Blueprint UI">
+  <main
+    class="bg-slate-955 mx-auto max-w-4xl px-4 py-12 font-sans text-slate-100"
+  >
+    <header class="mb-8 border-b border-slate-800 pb-6">
+      <div class="mb-2 flex items-center gap-3">
+        <span
+          class="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-amber-400"
+          >13. MENENGAH</span
+        >
+        <h1 class="text-2xl font-bold tracking-tight text-white">
+          Advanced Carousel Slider
+        </h1>
+      </div>
+      <p class="text-sm text-slate-400">
+        Komponen galeri geser cerdas dengan fitur *autoplay* otomatis, sensor
+        jeda kursor (*pause on hover*), serta sistem *reset interval* dinamis
+        saat dipicu secara manual.
+      </p>
+    </header>
+
+    <section class="mb-12" aria-labelledby="preview-title">
+      <h2
+        id="preview-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Live Preview (Autoplay Version)
+      </h2>
+
+      <div
+        class="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 shadow-inner"
+      >
+        <div
+          x-data="{
+            activeSlide: 0,
+            totalSlides: 3,
+            autoplayTimer: null,
+
+            startAutoplay() {
+              this.stopAutoplay();
+              this.autoplayTimer = setInterval(() => { this.next(false); }, 3000);
+            },
+            stopAutoplay() {
+              if (this.autoplayTimer) { clearInterval(this.autoplayTimer); this.autoplayTimer = null; }
+            },
+            next(manual = true) {
+              if (manual) this.startAutoplay();
+              this.activeSlide = (this.activeSlide + 1) % this.totalSlides;
+            },
+            prev() {
+              this.startAutoplay();
+              this.activeSlide = (this.activeSlide - 1 + this.totalSlides) % this.totalSlides;
+            },
+            goTo(index) {
+              this.startAutoplay();
+              this.activeSlide = index;
+            }
+          }"
+          x-init="startAutoplay()"
+          class="mx-auto w-full max-w-xl"
+        >
+          <div
+            @mouseenter="stopAutoplay()"
+            @mouseleave="startAutoplay()"
+            class="group relative overflow-hidden rounded-xl border border-slate-800 bg-slate-900"
+          >
+            <div class="relative h-56 overflow-hidden">
+              <div
+                class="flex h-full transition-transform duration-500 ease-out"
+                :style="`transform: translateX(-${activeSlide * 100}%)`"
+              >
+                <div
+                  class="flex h-full w-full shrink-0 flex-col justify-center bg-linear-to-br from-amber-600/10 to-slate-950 p-6"
+                >
+                  <span
+                    class="mb-1 font-mono text-[9px] tracking-widest text-amber-400 uppercase"
+                    >Slide Module 01</span
+                  >
+                  <h3 class="mb-1 text-base font-bold text-white">
+                    Studion Site Architecture
+                  </h3>
+                  <p class="max-w-sm text-xs leading-relaxed text-slate-400">
+                    Eksplorasi blueprint UI komponen dengan manajemen performa
+                    enteng dan reaktivitas instan.
+                  </p>
+                </div>
+
+                <div
+                  class="flex h-full w-full shrink-0 flex-col justify-center bg-linear-to-br from-sky-600/10 to-slate-950 p-6"
+                  x-cloak
+                >
+                  <span
+                    class="mb-1 font-mono text-[9px] tracking-widest text-sky-400 uppercase"
+                    >Slide Module 02</span
+                  >
+                  <h3 class="mb-1 text-base font-bold text-white">
+                    Medivoy Health Platform
+                  </h3>
+                  <p class="max-w-sm text-xs leading-relaxed text-slate-400">
+                    Integrasi sistem rekam medis digital responsif, dioptimasi
+                    penuh menggunakan utilitas framework CSS terbaru.
+                  </p>
+                </div>
+
+                <div
+                  class="flex h-full w-full shrink-0 flex-col justify-center bg-linear-to-br from-emerald-600/10 to-slate-950 p-6"
+                  x-cloak
+                >
+                  <span
+                    class="mb-1 font-mono text-[9px] tracking-widest text-emerald-400 uppercase"
+                    >Slide Module 03</span
+                  >
+                  <h3 class="mb-1 text-base font-bold text-white">
+                    Automated Cloud Sandbox
+                  </h3>
+                  <p class="max-w-sm text-xs leading-relaxed text-slate-400">
+                    Deployment otomatis satu klik nirkabel terintegrasi Vercel
+                    API, mengamankan kode repositori lo secara rapi.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              @click="prev()"
+              class="absolute top-1/2 left-3 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg border border-slate-800 bg-slate-950/70 text-slate-400 opacity-0 transition-all group-hover:opacity-100 hover:text-white active:scale-90"
+            >
+              <i class="fa-solid fa-chevron-left text-[10px]"></i>
+            </button>
+            <button
+              @click="next(true)"
+              class="absolute top-1/2 right-3 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg border border-slate-800 bg-slate-950/70 text-slate-400 opacity-0 transition-all group-hover:opacity-100 hover:text-white active:scale-90"
+            >
+              <i class="fa-solid fa-chevron-right text-[10px]"></i>
+            </button>
+          </div>
+
+          <div class="mt-3 flex items-center justify-center gap-1.5">
+            <template x-for="(slide, index) in totalSlides" :key="index">
+              <button
+                @click="goTo(index)"
+                :class="activeSlide === index ? 'w-4 bg-amber-500' : 'w-1.5 bg-slate-800 hover:bg-slate-700'"
+                class="h-1.5 rounded-full transition-all duration-300"></button>
+            </template>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-12" aria-labelledby="code-title">
+      <h2
+        id="code-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Clean Code (Production Ready)
+      </h2>
+      <article x-data="codeCopier" class="group relative">
+        <button
+          @click="copy()"
+          :class="copied ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900'"
+          class="absolute top-3 right-3 z-10 flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-medium backdrop-blur-sm transition-all duration-200 active:scale-95"
+        >
+          <i x-show="!copied" class="fa-regular fa-copy text-sm"></i>
+          <i
+            x-show="copied"
+            class="fa-solid fa-check text-sm text-emerald-400"
+            x-cloak></i>
+          <span x-text="copied ? 'Copied!' : 'Copy'"></span>
+        </button>
+        <pre
+          class="h-100 overflow-auto rounded-2xl border border-slate-800 bg-slate-900 p-5 pr-20 font-mono text-xs leading-relaxed text-slate-300"><code>{codeSnippet}</code></pre>
+      </article>
+    </section>
+
+    <section aria-labelledby="doc-title">
+      <h2
+        id="doc-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Dokumentasi Logika
+      </h2>
+      <article
+        class="space-y-4 rounded-2xl border border-slate-800/60 bg-slate-900/50 p-5 text-xs leading-relaxed text-slate-400 md:text-sm"
+      >
+        <p>
+          <strong class="text-slate-200">1. Rumus Geser Sumbu X Dinamis:</strong
+          > Efek geser murni memanfaatkan properti inline CSS binding bawaan Alpine:
+          <code class="font-mono text-yellow-400"
+            >:style="transform: translateX(-&#36;&#123;activeSlide *
+            100&#125;%)"</code
+          >. Dengan memaksa track berjalan horizontal sejauh kelipatan **100
+          persen**, slide yang tayang otomatis terkunci simetris tanpa kebocoran
+          kode hidup ke kompiler Astro.
+        </p>
+        <p>
+          <strong class="text-slate-200"
+            >2. Interseptor Siklus Klik (Interval Reset):</strong
+          > Untuk menjamin agar slide tidak berganti secara mendadak sesaat setelah
+          diklik manual, argumen <code class="font-mono text-slate-300"
+            >this.startAutoplay()</code
+          > disuntikkan langsung di setiap trigger klik. Aksi ini mematikan siklus
+          hitung mundur lama dan membuat jeda timer 3 detik berjalan segar dari nol
+          kembali.
+        </p>
+      </article>
+    </section>
+
+    <footer class="mt-12 border-t border-slate-900 pt-6">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 text-xs text-slate-500 transition-colors hover:text-white"
+      >
+        ← Kembali ke Dashboard Sandbox
+      </a>
+    </footer>
+  </main>
+</Layout>
+
+<script define:vars={{ codeSnippet }}>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('codeCopier', () => ({
+      copied: false,
+      codeText: codeSnippet,
+      copy() {
+        navigator.clipboard.writeText(this.codeText)
+        this.copied = true
+        setTimeout(() => {
+          this.copied = false
+        }, 2000)
+      },
+    }))
+  })
+</script>

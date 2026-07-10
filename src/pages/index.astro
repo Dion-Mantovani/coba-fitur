@@ -1,0 +1,546 @@
+---
+// src/pages/index.astro
+import Layout from '../layouts/Layout.astro'
+---
+
+<Layout
+  title="Coba Fitur"
+  description="Belajar beberapa fitur mulai dari yang mudah hingga yang kompleks."
+>
+  <main class="mx-auto max-w-4xl px-4 py-12">
+    <!-- Header -->
+    <header
+      class="mb-12 border-b border-slate-800 pb-8 text-center md:text-left"
+    >
+      <div
+        class="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 font-mono text-xs text-emerald-400"
+      >
+        <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-400"></span> Ready
+        to Code
+      </div>
+      <br />
+      <h1
+        class="inline-block bg-linear-to-r from-sky-400 via-yellow-400 to-emerald-400 bg-clip-text text-4xl font-extrabold tracking-tight text-transparent"
+      >
+        Sandbox Proyek
+      </h1>
+      <p class="mt-2 text-sm text-slate-400 md:text-base">
+        Tempat uji coba terisolasi untuk fitur-fitur <span
+          class="font-medium text-sky-400">Astro</span
+        > + <span class="font-medium text-yellow-400">Alpine.js</span> + <span
+          class="font-medium text-emerald-400">Tailwind v4</span
+        >.
+      </p>
+    </header>
+
+    <!-- Grid Menu Fitur -->
+    <div class="space-y-12">
+      <!-- 1. KATEGORI MUDAH / RECEH -->
+      <section>
+        <div class="mb-4 flex items-center gap-3">
+          <h2 class="text-sm font-bold tracking-wider text-slate-400 uppercase">
+            01. Kategori: Mudah / Receh
+          </h2>
+          <span
+            class="rounded-md border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 text-[10px] font-bold text-sky-400"
+            >Sekali Prompt AI Kelar</span
+          >
+        </div>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <a
+            href="/01-sticky-header"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-sky-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-sky-400"
+              >
+                Sticky Header
+              </h3>
+              <span class="font-mono text-xs text-slate-500"
+                >/01-sticky-header</span
+              >
+            </div>
+            <p class="text-xs text-slate-400">
+              Navigasi atas yang mengecil atau berubah warna otomatis saat
+              halaman di-scroll down.
+            </p>
+          </a>
+
+          <a
+            href="/02-mobile-menu"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-sky-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-sky-400"
+              >
+                Mobile Menu Overlay
+              </h3>
+              <span class="font-mono text-xs text-slate-500"
+                >/02-mobile-menu</span
+              >
+            </div>
+            <p class="text-xs text-slate-400">
+              Hamburger menu interaktif versi mobile dengan efek transisi
+              overlay full-screen.
+            </p>
+          </a>
+
+          <a
+            href="/03-accordion"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-sky-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-sky-400"
+              >
+                Accordion
+              </h3>
+              <span class="font-mono text-xs text-slate-500">/03-accordion</span
+              >
+            </div>
+            <p class="text-xs text-slate-400">
+              Komponen tanya-jawab (FAQ) dengan efek slide buka-tutup yang
+              mulus.
+            </p>
+          </a>
+
+          <a
+            href="/04-tabs"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-sky-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-sky-400"
+              >
+                Tabs Detail
+              </h3>
+              <span class="font-mono text-xs text-slate-500">/04-tabs</span>
+            </div>
+            <p class="text-xs text-slate-400">
+              Perpindahan tab informasi (Fasilitas, Rute, Syarat) tanpa refresh
+              halaman.
+            </p>
+          </a>
+
+          <a
+            href="/05-pop-up"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-sky-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-sky-400"
+              >
+                Pop Up Modal
+              </h3>
+              <span class="font-mono text-xs text-slate-500">/05-pop-up</span>
+            </div>
+            <p class="text-xs text-slate-400">
+              Modal banner promo/brosur yang muncul otomatis atau saat tombol
+              diklik.
+            </p>
+          </a>
+
+          <a
+            href="/06-floating-button"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-sky-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-sky-400"
+              >
+                Floating Button
+              </h3>
+              <span class="font-mono text-xs text-slate-500"
+                >/06-floating-btn</span
+              >
+            </div>
+            <p class="text-xs text-slate-400">
+              Tombol melayang pojok kanan bawah untuk chat cepat CS WhatsApp.
+            </p>
+          </a>
+
+          <a
+            href="/07-static-pages"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-sky-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-sky-400"
+              >
+                404 & Thank You Page
+              </h3>
+              <span class="font-mono text-xs text-slate-500"
+                >/07-static-pages</span
+              >
+            </div>
+            <p class="text-xs text-slate-400">
+              Desain halaman error 404 dan halaman sukses registrasi
+              pasca-booking.
+            </p>
+          </a>
+
+          <a
+            href="/08-number-counter"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-sky-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-sky-400"
+              >
+                Number Counter
+              </h3>
+              <span class="font-mono text-xs text-slate-500">/08-counter</span>
+            </div>
+            <p class="text-xs text-slate-400">
+              Animasi angka bergerak bertambah (misal: "10,000+ Jamaah
+              Terangkat").
+            </p>
+          </a>
+
+          <a
+            href="/09-media-integration"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-sky-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-sky-400"
+              >
+                Media Embed (Gmaps, YT, IG)
+              </h3>
+              <span class="font-mono text-xs text-slate-500">/09-embed</span>
+            </div>
+            <p class="text-xs text-slate-400">
+              Integrasi peta lokasi kantor, video dokumentasi, dan feed media
+              sosial.
+            </p>
+          </a>
+
+          <a
+            href="/10-google-business"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-sky-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-sky-400"
+              >
+                Google Business & Review
+              </h3>
+              <span class="font-mono text-xs text-slate-500"
+                >/10-google-biz</span
+              >
+            </div>
+            <p class="text-xs text-slate-400">
+              Menghubungkan tombol review dan menampilkan ulasan Google Profile
+              Bintang 5.
+            </p>
+          </a>
+        </div>
+      </section>
+
+      <!-- 2. KATEGORI MENENGAH -->
+      <section>
+        <div class="mb-4 flex items-center gap-3">
+          <h2 class="text-sm font-bold tracking-wider text-slate-400 uppercase">
+            02. Kategori: Menengah
+          </h2>
+          <span
+            class="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-400"
+            >Ketelitian & Setup Tambahan</span
+          >
+        </div>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <a
+            href="/11-form-handling"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-amber-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-amber-400"
+              >
+                Form Handling & Validation
+              </h3>
+              <span class="font-mono text-xs text-slate-500"
+                >/11-form-handling</span
+              >
+            </div>
+            <p class="text-xs text-slate-400">
+              Validasi input real-time, handling state loading tombol, &
+              manajemen error.
+            </p>
+          </a>
+
+          <a
+            href="/12-slider"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-amber-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-amber-400"
+              >
+                Slider Carousel
+              </h3>
+              <span class="font-mono text-xs text-slate-500">/12-slider</span>
+            </div>
+            <p class="text-xs text-slate-400">
+              Galeri gambar hotel atau testimoni performa tinggi pakai Tailwind
+              scroll-snap.
+            </p>
+          </a>
+
+          <a
+            href="/13-scroll-animation"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-amber-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-amber-400"
+              >
+                Scroll Animation
+              </h3>
+              <span class="font-mono text-xs text-slate-500"
+                >/13-scroll-anim</span
+              >
+            </div>
+            <p class="text-xs text-slate-400">
+              Menggunakan directive x-intersect untuk memicu animasi elemen pas
+              masuk viewport.
+            </p>
+          </a>
+
+          <a
+            href="/14-seo-schema"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-amber-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-amber-400"
+              >
+                Basic SEO & FAQ Schema
+              </h3>
+              <span class="font-mono text-xs text-slate-500"
+                >/14-seo-schema</span
+              >
+            </div>
+            <p class="text-xs text-slate-400">
+              Injeksi tag meta data robot dan struktur data JSON-LD langsung
+              dari server Astro.
+            </p>
+          </a>
+        </div>
+      </section>
+
+      <!-- 3. KATEGORI KOMPLEKS -->
+      <section>
+        <div class="mb-4 flex items-center gap-3">
+          <h2 class="text-sm font-bold tracking-wider text-slate-400 uppercase">
+            03. Kategori: Kompleks
+          </h2>
+          <span
+            class="rounded-md border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 text-[10px] font-bold text-rose-400"
+            >Logic & Integrasi Data</span
+          >
+        </div>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <a
+            href="/15-astro-api"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-rose-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-rose-400"
+              >
+                Astro API Endpoints
+              </h3>
+              <span class="font-mono text-xs text-slate-500">/15-astro-api</span
+              >
+            </div>
+            <p class="text-xs text-slate-400">
+              Pembuatan REST API native server-side menggunakan Astro Endpoints
+              (.ts), handling HTTP verbs, dan response JSON.
+            </p>
+          </a>
+
+          <a
+            href="/16-sanity-cms"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-rose-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-rose-400"
+              >
+                CMS (Sanity)
+              </h3>
+              <span class="font-mono text-xs text-slate-500"
+                >/16-sanity-cms</span
+              >
+            </div>
+            <p class="text-xs text-slate-400">
+              Setup schema content travel, fetch data via GROQ, dan render
+              Portable Text.
+            </p>
+          </a>
+
+          <a
+            href="/17-supabase-db"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-rose-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-rose-400"
+              >
+                Database (Supabase)
+              </h3>
+              <span class="font-mono text-xs text-slate-500"
+                >/17-supabase-db</span
+              >
+            </div>
+            <p class="text-xs text-slate-400">
+              Koneksi database relasional, konfigurasi Row Level Security (RLS),
+              dan API endpoints.
+            </p>
+          </a>
+
+          <a
+            href="/18-filter-search"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-rose-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-rose-400"
+              >
+                Filter & Search Dinamis
+              </h3>
+              <span class="font-mono text-xs text-slate-500"
+                >/18-filter-search</span
+              >
+            </div>
+            <p class="text-xs text-slate-400">
+              Pencarian real-time dan penyaringan paket travel berdasarkan
+              bulan/harga dari database.
+            </p>
+          </a>
+
+          <a
+            href="/19-multibahasa"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-rose-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-rose-400"
+              >
+                Multibahasa (i18n)
+              </h3>
+              <span class="font-mono text-xs text-slate-500"
+                >/19-multibahasa</span
+              >
+            </div>
+            <p class="text-xs text-slate-400">
+              Setup routing dinamis URL lokalitas (ID, EN, AR) dan lokalisasi
+              field data CMS.
+            </p>
+          </a>
+
+          <a
+            href="/20-blog"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-rose-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-rose-400"
+              >
+                Blog & Edukasi
+              </h3>
+              <span class="font-mono text-xs text-slate-500">/20-blog</span>
+            </div>
+            <p class="text-xs text-slate-400">
+              Dynamic route generator untuk ribuan artikel statis serta optimasi
+              resolusi gambar asset.
+            </p>
+          </a>
+
+          <a
+            href="/21-countdown-promo"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-rose-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-rose-400"
+              >
+                Durasi Harga / Promo
+              </h3>
+              <span class="font-mono text-xs text-slate-500">/21-countdown</span
+              >
+            </div>
+            <p class="text-xs text-slate-400">
+              Hitung mundur promo per detik ter-sinkronisasi aman antara Server
+              time dan Client UI.
+            </p>
+          </a>
+
+          <a
+            href="/22-caching-tools"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-rose-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-rose-400"
+              >
+                Caching Tools & Webhooks
+              </h3>
+              <span class="font-mono text-xs text-slate-500">/22-caching</span>
+            </div>
+            <p class="text-xs text-slate-400">
+              Strategi On-Demand Revalidation (ISR) agar konten terupdate tanpa
+              membebani kuota API.
+            </p>
+          </a>
+
+          <a
+            href="/23-booking-system"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-rose-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-rose-400"
+              >
+                Booking Sistem Custom
+              </h3>
+              <span class="font-mono text-xs text-slate-500">/23-booking</span>
+            </div>
+            <p class="text-xs text-slate-400">
+              Sistem kunci kursi (seat), handling bentrokan waktu transaksi, dan
+              status otomatis void.
+            </p>
+          </a>
+
+          <a
+            href="/24-payment-gateway"
+            class="group rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-rose-500/50"
+          >
+            <div class="mb-1 flex items-start justify-between">
+              <h3
+                class="font-semibold text-slate-200 transition-colors group-hover:text-rose-400"
+              >
+                Payment Gateway Integration
+              </h3>
+              <span class="font-mono text-xs text-slate-500">/24-payment</span>
+            </div>
+            <p class="text-xs text-slate-400">
+              Integrasi Midtrans/Xendit Sandbox, pengamanan endpoint server, dan
+              asynchronus webhook lunas.
+            </p>
+          </a>
+        </div>
+      </section>
+    </div>
+
+    <!-- Footer Copyright -->
+    <footer
+      class="mt-16 border-t border-slate-900 pt-8 text-center text-xs text-slate-600"
+    >
+      Build by DION.
+    </footer>
+  </main>
+</Layout>

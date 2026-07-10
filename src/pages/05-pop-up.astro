@@ -1,0 +1,300 @@
+---
+// src/pages/05-modal-popup.astro
+import Layout from '../layouts/Layout.astro' // Sesuaikan path layout lo
+
+// Simpan kodingan produksi universal ke string agar siap disalin
+const codeSnippet = `<!-- Komponen Modal Pop-up Universal (Super Smooth & Accessible) -->
+<div x-data="{ isModalOpen: false }" class="w-full text-center">
+
+  <!-- Tombol Pemicu (Trigger) -->
+  <button
+    @click="isModalOpen = true"
+    class="px-5 py-2.5 bg-sky-500 hover:bg-sky-600 text-white font-medium text-sm rounded-xl shadow-lg shadow-sky-500/20 active:scale-95 transition-all duration-200"
+  >
+    Open Action Modal
+  </button>
+
+  <!-- Container Modal Utama (Fixed Terkunci ke Window Browser Utama) -->
+  <div
+    x-show="isModalOpen"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-x-hidden overflow-y-auto"
+    role="dialog"
+    aria-modal="true"
+    x-cloak
+  >
+    <!-- 1. Backdrop Gelap (Fade In) -->
+    <div
+      x-show="isModalOpen"
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-200"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      @click="isModalOpen = false"
+      class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm"
+    ></div>
+
+    <!-- 2. Kotak Modal Konten (Scale Up + Escape Key Handler) -->
+    <div
+      x-show="isModalOpen"
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+      x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+      x-transition:leave="transition ease-in duration-200"
+      x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+      x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+      @keyup.escape.window="isModalOpen = false"
+      class="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 text-left z-10"
+    >
+      <!-- Tombol Close (X) Pojok Kanan Atas -->
+      <button
+        @click="isModalOpen = false"
+        class="absolute top-4 right-4 text-slate-500 hover:text-slate-300 transition-colors"
+        aria-label="Close modal"
+      >
+        <i class="fa-solid fa-xmark text-base"></i>
+      </button>
+
+      <!-- Icon & Header Info -->
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+          <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-semibold text-white">Deactivate Account</h3>
+          <p class="text-xs text-slate-500">Confirm your request action</p>
+        </div>
+      </div>
+
+      <!-- Deskripsi Konten -->
+      <div class="mb-6">
+        <p class="text-sm text-slate-400 leading-relaxed">
+          Are you absolute sure you want to deactivate your account? All of your personal website blueprint settings, templates, and logs will be permanently removed instantly.
+        </p>
+      </div>
+
+      <!-- Tombol Aksi Bawah -->
+      <div class="flex items-center justify-end gap-3 border-t border-slate-800/60 pt-4">
+        <button
+          @click="isModalOpen = false"
+          class="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700/80 border border-slate-700/50 rounded-lg transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          @click="isModalOpen = false"
+          class="px-4 py-2 text-xs font-medium text-white bg-rose-600 hover:bg-rose-500 rounded-lg transition-colors"
+        >
+          Yes, Deactivate
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>`
+---
+
+<Layout title="05. Modal Pop-up - Blueprint UI">
+  <main
+    class="bg-slate-955 mx-auto max-w-4xl px-4 py-12 font-sans text-slate-100"
+  >
+    <!-- HEADER: Judul & Deskripsi Fitur -->
+    <header class="mb-8 border-b border-slate-800 pb-6">
+      <div class="mb-2 flex items-center gap-3">
+        <span
+          class="rounded-md border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-sky-400"
+          >05. MUDAH</span
+        >
+        <h1 class="text-2xl font-bold tracking-tight text-white">
+          Pop-up Modal
+        </h1>
+      </div>
+      <p class="text-sm text-slate-400">
+        Komponen dialog pop-up dengan sistem penguncian fokus jendela, penutupan
+        via tombol Escape, dan animasi transisi ganda elastis yang memisahkan
+        backdrop dengan boks utama.
+      </p>
+    </header>
+
+    <!-- SECTION 1: Live Preview Playground -->
+    <section class="mb-12" aria-labelledby="preview-title">
+      <h2
+        id="preview-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Live Preview
+      </h2>
+
+      <!-- Container Sandbox Box (Tetap kokoh ukurannya, tombol trigger pas di tengah) -->
+      <div
+        class="flex h-45 w-full items-center justify-center rounded-2xl border border-slate-800 bg-slate-900/40 shadow-inner"
+      >
+        <div x-data="{ isModalOpen: false }">
+          <!-- Trigger Button di Tengah Container -->
+          <button
+            @click="isModalOpen = true"
+            class="rounded-xl bg-sky-500 px-5 py-2.5 text-xs font-medium text-white shadow-lg shadow-sky-500/20 transition-all duration-200 hover:bg-sky-600 active:scale-95"
+          >
+            Launch Live Demo Modal
+          </button>
+
+          <!-- MODAL GLOBAL: Menjadikan window browser sebagai parent utama (Anti-Ciut!) -->
+          <div
+            x-show="isModalOpen"
+            class="fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto p-4"
+            role="dialog"
+            x-cloak
+          >
+            <!-- Backdrop Full Screen -->
+            <div
+              x-show="isModalOpen"
+              x-transition.opacity.duration.300ms
+              @click="isModalOpen = false"
+              class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm"
+            >
+            </div>
+
+            <!-- Box Modal Utama Full Size -->
+            <div
+              x-show="isModalOpen"
+              x-transition:enter="transition duration-300 ease-out"
+              x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+              x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+              x-transition:leave="transition duration-200 ease-in"
+              x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+              @keyup.escape.window="isModalOpen = false"
+              class="relative z-10 w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6 text-left shadow-2xl"
+            >
+              <!-- Tombol Silang (X) -->
+              <button
+                @click="isModalOpen = false"
+                class="absolute top-4 right-4 text-slate-500 transition-colors hover:text-slate-300"
+              >
+                <i class="fa-solid fa-xmark text-base"></i>
+              </button>
+
+              <div class="mb-4 flex items-center gap-3">
+                <div
+                  class="flex h-10 w-10 items-center justify-center rounded-xl border border-sky-500/30 bg-sky-500/10 text-sky-400"
+                >
+                  <i class="fa-solid fa-circle-check text-lg"></i>
+                </div>
+                <div>
+                  <h3 class="text-base font-semibold text-white">
+                    Component Ready
+                  </h3>
+                  <p class="text-xs text-slate-500">
+                    Sandbox preview modal window
+                  </p>
+                </div>
+              </div>
+
+              <p class="mb-6 text-sm leading-relaxed text-slate-400">
+                Ini adalah tampilan modal pop-up berskala penuh. Menggunakan
+                window sebagai parent utama sehingga ukurannya tetap presisi,
+                lega, dan transisinya meluncur megah.
+              </p>
+
+              <div
+                class="flex justify-end gap-3 border-t border-slate-800/60 pt-4"
+              >
+                <button
+                  @click="isModalOpen = false"
+                  class="rounded-lg bg-slate-800 px-4 py-2 text-xs text-slate-300 transition-colors hover:text-white"
+                  >Selesai Uji</button
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: Code Snippet Block (Siap Salin) -->
+    <section class="mb-12" aria-labelledby="code-title">
+      <h2
+        id="code-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Clean Code (Production Ready)
+      </h2>
+      <article x-data="codeCopier" class="group relative">
+        <button
+          @click="copy()"
+          :class="copied ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900'"
+          class="absolute top-3 right-3 z-10 flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-medium backdrop-blur-sm transition-all duration-200 active:scale-95"
+          aria-label="Salin kode"
+        >
+          <i x-show="!copied" class="fa-regular fa-copy text-sm"></i>
+          <i
+            x-show="copied"
+            class="fa-solid fa-check text-sm text-emerald-400"
+            x-cloak></i>
+          <span x-text="copied ? 'Copied!' : 'Copy'"></span>
+        </button>
+
+        <!-- Sesuai Standar: Menggunakan class h-100 dan overflow-auto bawaan Tailwind v4 -->
+        <pre
+          class="h-100 overflow-auto rounded-2xl border border-slate-800 bg-slate-900 p-5 pr-20 font-mono text-xs leading-relaxed text-slate-300"><code>{codeSnippet}</code></pre>
+      </article>
+    </section>
+
+    <!-- SECTION 3: Dokumentasi & Catatan Teknis -->
+    <section aria-labelledby="doc-title">
+      <h2
+        id="doc-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Dokumentasi Logika
+      </h2>
+      <article
+        class="space-y-4 rounded-2xl border border-slate-800/60 bg-slate-900/50 p-5 text-xs leading-relaxed text-slate-400 md:text-sm"
+      >
+        <p>
+          <strong class="text-slate-200"
+            >1. Aksesibilitas Jendela (@keyup.escape):</strong
+          > Modifikator global <code class="font-mono text-yellow-400"
+            >@keyup.escape.window</code
+          > mengikat perintah penutupan langsung ke keyboard fisik user. Kapan pun
+          modal terbuka dan user pencet tombol Esc, status variabel langsung dipaksa
+          balik menjadi `false`.
+        </p>
+        <p>
+          <strong class="text-slate-200">2. Layouting Tinggi Konstan:</strong> Penggunaan
+          <code class="font-mono text-slate-300">h-100</code> dan <code
+            class="font-mono text-slate-300">overflow-auto</code
+          > pada boks kode memastikan halaman dokumentasi lo tetap rapi, simetris,
+          dan scannable tanpa terpengaruh panjangnya baris kode produksi di dalamnya.
+        </p>
+      </article>
+    </section>
+
+    <!-- Tombol Kembali -->
+    <footer class="mt-12 border-t border-slate-900 pt-6">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 text-xs text-slate-500 transition-colors hover:text-white"
+      >
+        ← Kembali ke Dashboard Sandbox
+      </a>
+    </footer>
+  </main>
+</Layout>
+
+<!-- Script Logic Handler Salin -->
+<script define:vars={{ codeSnippet }}>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('codeCopier', () => ({
+      copied: false,
+      codeText: codeSnippet,
+      copy() {
+        navigator.clipboard.writeText(this.codeText)
+        this.copied = true
+        setTimeout(() => {
+          this.copied = false
+        }, 2000)
+      },
+    }))
+  })
+</script>

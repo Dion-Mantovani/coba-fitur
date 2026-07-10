@@ -1,0 +1,250 @@
+---
+// src/pages/03-accordion.astro
+import Layout from '../layouts/Layout.astro' // Sesuaikan path layout lo
+
+// Simpan kodingan produksi universal ke string (Udah pake x-collapse)
+const codeSnippet = `<!-- Komponen Accordion FAQ Universal (Smooth Collapse) -->
+<div
+  x-data="{ activeAccordion: null }"
+  class="w-full max-w-2xl mx-auto space-y-4"
+>
+  <!-- Item 1 -->
+  <div class="border border-slate-800 bg-slate-900 rounded-xl overflow-hidden transition-all duration-300">
+    <button
+      @click="activeAccordion = (activeAccordion === 1 ? null : 1)"
+      class="w-full px-5 py-4 flex items-center justify-between text-left font-medium text-white hover:bg-slate-800/50 transition-colors"
+    >
+      <span>What services do you provide?</span>
+      <i
+        :class="activeAccordion === 1 ? 'rotate-180 text-sky-400' : 'text-slate-500'"
+        class="fa-solid fa-chevron-down text-xs transform transition-transform duration-300"
+      ></i>
+    </button>
+
+    <!-- Menggunakan x-collapse agar tinggi konten meluncur mulus -->
+    <div
+      x-show="activeAccordion === 1"
+      x-collapse
+      class="text-sm text-slate-400 leading-relaxed"
+      x-cloak
+    >
+      <div class="px-5 pb-5 pt-1 border-t border-slate-800/40">
+        We offer full-stack web development, UI/UX design components, and cloud deployment automation engineered for modern digital products.
+      </div>
+    </div>
+  </div>
+
+  <!-- Item 2 -->
+  <div class="border border-slate-800 bg-slate-900 rounded-xl overflow-hidden transition-all duration-300">
+    <button
+      @click="activeAccordion = (activeAccordion === 2 ? null : 2)"
+      class="w-full px-5 py-4 flex items-center justify-between text-left font-medium text-white hover:bg-slate-800/50 transition-colors"
+    >
+      <span>Is the source code production-ready?</span>
+      <i
+        :class="activeAccordion === 2 ? 'rotate-180 text-sky-400' : 'text-slate-500'"
+        class="fa-solid fa-chevron-down text-xs transform transition-transform duration-300"
+      ></i>
+    </button>
+
+    <!-- Menggunakan x-collapse agar tinggi konten meluncur mulus -->
+    <div
+      x-show="activeAccordion === 2"
+      x-collapse
+      class="text-sm text-slate-400 leading-relaxed"
+      x-cloak
+    >
+      <div class="px-5 pb-5 pt-1 border-t border-slate-800/40">
+        Yes, absolutely. All blueprints follow high-quality HTML5 semantic tags, clean Tailwind utility classes, and reactive lightweight JavaScript logic.
+      </div>
+    </div>
+  </div>
+</div>`
+---
+
+<Layout title="03. Accordion FAQ - Blueprint UI">
+  <main
+    class="bg-slate-955 mx-auto max-w-4xl px-4 py-12 font-sans text-slate-100"
+  >
+    <!-- HEADER: Judul & Deskripsi Fitur -->
+    <header class="mb-8 border-b border-slate-800 pb-6">
+      <div class="mb-2 flex items-center gap-3">
+        <span
+          class="rounded-md border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-sky-400"
+          >03. MUDAH</span
+        >
+        <h1 class="text-2xl font-bold tracking-tight text-white">Accordion</h1>
+      </div>
+      <p class="text-sm text-slate-400">
+        Elemen antarmuka collapse/expand interaktif dengan animasi tinggi
+        meluncur mulus memanfaatkan plugin <code class="font-mono text-sky-400"
+          >@alpinejs/collapse</code
+        >. Jarak layout diatur presisi menggunakan pembatas container internal.
+      </p>
+    </header>
+
+    <!-- SECTION 1: Live Preview Playground -->
+    <section class="mb-12" aria-labelledby="preview-title">
+      <h2
+        id="preview-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Live Preview
+      </h2>
+
+      <!-- Container Sandbox Box -->
+      <div
+        class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 shadow-inner"
+      >
+        <div
+          x-data="{ activeAccordion: null }"
+          class="mx-auto w-full max-w-xl space-y-4"
+        >
+          <!-- Item 1 -->
+          <div
+            class="overflow-hidden rounded-xl border border-slate-800 bg-slate-900 transition-all duration-300"
+          >
+            <button
+              @click="activeAccordion = (activeAccordion === 1 ? null : 1)"
+              class="flex w-full items-center justify-between px-5 py-4 text-left text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800/40"
+            >
+              <span>Bagaimana lisensi penggunaan kodenya?</span>
+              <i
+                :class="activeAccordion === 1 ? 'rotate-180 text-sky-400' : 'text-slate-500'"
+                class="fa-solid fa-chevron-down transform text-xs transition-transform duration-300"
+              ></i>
+            </button>
+            <div
+              x-show="activeAccordion === 1"
+              x-collapse
+              x-cloak
+              class="text-xs leading-relaxed text-slate-400"
+            >
+              <!-- Padding dibungkus di dalam div terdalam agar kalkulasi tinggi x-collapse gak patah-patah -->
+              <div class="border-t border-slate-800/40 px-5 pt-1 pb-5">
+                100% templates bebas dan gratis. Kode ini dirancang universal
+                agar bisa langsung lo salin, modifikasi, dan pakai untuk proyek
+                personal maupun komersial klien lo tanpa royalti.
+              </div>
+            </div>
+          </div>
+
+          <!-- Item 2 -->
+          <div
+            class="overflow-hidden rounded-xl border border-slate-800 bg-slate-900 transition-all duration-300"
+          >
+            <button
+              @click="activeAccordion = (activeAccordion === 2 ? null : 2)"
+              class="flex w-full items-center justify-between px-5 py-4 text-left text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800/40"
+            >
+              <span>Apakah performanya enteng saat dibuka?</span>
+              <i
+                :class="activeAccordion === 2 ? 'rotate-180 text-sky-400' : 'text-slate-500'"
+                class="fa-solid fa-chevron-down transform text-xs transition-transform duration-300"
+              ></i>
+            </button>
+            <div
+              x-show="activeAccordion === 2"
+              x-collapse
+              x-cloak
+              class="text-xs leading-relaxed text-slate-400"
+            >
+              <div class="border-t border-slate-800/40 px-5 pt-1 pb-5">
+                Sangat enteng. Karena dikombinasikan langsung dengan plugin
+                resmi collapse milik Alpine, pergerakan tinggi elemen meluncur
+                mulus mengikuti standar performa browser modern.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: Code Snippet Block -->
+    <section class="mb-12" aria-labelledby="code-title">
+      <h2
+        id="code-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Clean Code (Production Ready)
+      </h2>
+      <article x-data="codeCopier" class="group relative">
+        <button
+          @click="copy()"
+          :class="copied ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900'"
+          class="absolute top-3 right-3 z-10 flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-medium backdrop-blur-sm transition-all duration-200 active:scale-95"
+        >
+          <i x-show="!copied" class="fa-regular fa-copy text-sm"></i>
+          <i
+            x-show="copied"
+            class="fa-solid fa-check text-sm text-emerald-400"
+            x-cloak></i>
+          <span x-text="copied ? 'Copied!' : 'Copy'"></span>
+        </button>
+        <pre
+          class="h-100 overflow-auto rounded-2xl border border-slate-800 bg-slate-900 p-5 pr-20 font-mono text-xs leading-relaxed text-slate-300"><code>{codeSnippet}</code></pre>
+      </article>
+    </section>
+
+    <!-- SECTION 3: Dokumentasi & Catatan Teknis -->
+    <section aria-labelledby="doc-title">
+      <h2
+        id="doc-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Dokumentasi Logika
+      </h2>
+      <article
+        class="space-y-4 rounded-2xl border border-slate-800/60 bg-slate-900/50 p-5 text-xs leading-relaxed text-slate-400 md:text-sm"
+      >
+        <p>
+          <strong class="text-slate-200"
+            >1. Trik Padding dengan `x-collapse`:</strong
+          > Saat menggunakan <code class="font-mono text-yellow-400"
+            >x-collapse</code
+          >, hindari menaruh utility padding vertikal (<code
+            class="font-mono text-slate-300">py-*</code
+          > atau <code class="font-mono text-slate-300">pb-*</code>) langsung
+          pada tag pembungkus yang memuat directive tersebut. Taruh padding di
+          dalam `<div>
+            ` anak bungsunya (seperti contoh di atas) agar kalkulasi transisi
+            tinggi pikselnya tidak tersendat atau melompat di akhir animasi.
+          </div>
+          <p>
+            <strong class="text-slate-200">2. Jarak Antar Item:</strong> Menggunakan
+            <code class="font-mono text-slate-300">space-y-4</code> pada parent terluar
+            untuk menjamin jarak vertikal antar boks pertanyaan tetap konsisten dan
+            lega saat salah satu item melebar terbuka.
+          </p>
+        </p>
+      </article>
+    </section>
+
+    <!-- Tombol Kembali -->
+    <footer class="mt-12 border-t border-slate-900 pt-6">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 text-xs text-slate-500 transition-colors hover:text-white"
+      >
+        ← Kembali ke Dashboard Sandbox
+      </a>
+    </footer>
+  </main>
+</Layout>
+
+<!-- Script Logic Handler Salin -->
+<script define:vars={{ codeSnippet }}>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('codeCopier', () => ({
+      copied: false,
+      codeText: codeSnippet,
+      copy() {
+        navigator.clipboard.writeText(this.codeText)
+        this.copied = true
+        setTimeout(() => {
+          this.copied = false
+        }, 2000)
+      },
+    }))
+  })
+</script>

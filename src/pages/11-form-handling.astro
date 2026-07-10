@@ -1,0 +1,350 @@
+---
+// src/pages/11-form-handling.astro
+import Layout from '../layouts/Layout.astro' // Sesuaikan path layout lo
+
+// Simpan kodingan produksi universal ke string (FIXED: Bebas Overkill Backslash!)
+const codeSnippet = `<!-- Komponen Form Handling & Real-time Validation Universal -->
+<div
+  x-data="{
+    formData: { name: '', email: '', message: '' },
+    touched: { name: false, email: false, message: false },
+    isSubmitting: false,
+    isSuccess: false,
+
+    // Getters Validasi Instan (Clean Reactive Logic)
+    get nameError() {
+      if (!this.touched.name) return '';
+      if (!this.formData.name.trim()) return 'Nama wajib diisi, bro!';
+      if (this.formData.name.length < 3) return 'Nama minimal 3 karakter ya.';
+      return '';
+    },
+    get emailError() {
+      if (!this.touched.email) return '';
+      if (!this.formData.email.trim()) return 'Email jangan dikosongin.';
+      // Menggunakan constructor instansiasi standar agar karakter string aman bersih
+      const regex = new RegExp('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}$');
+      if (!regex.test(this.formData.email)) return 'Format email lo salah tuh.';
+      return '';
+    },
+    get isFormValid() {
+      const regex = new RegExp('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}$');
+      return this.formData.name.length >= 3 &&
+             regex.test(this.formData.email) &&
+             this.formData.message.trim() !== '';
+    },
+
+    // Action Submit Handler
+    submitForm() {
+      if (!this.isFormValid) return;
+      this.isSubmitting = true;
+
+      setTimeout(() => {
+        this.isSubmitting = false;
+        this.isSuccess = true;
+        this.formData = { name: '', email: '', message: '' };
+        this.touched = { name: false, email: false, message: false };
+      }, 1500);
+    }
+  }"
+  class="w-full max-w-md mx-auto"
+>
+  <!-- Form Utama -->
+  <form x-show="!isSuccess" @submit.prevent="submitForm()" class="space-y-2" novalidate>
+    <!-- Input: Nama -->
+    <div class="space-y-1">
+      <label class="text-xs font-semibold text-slate-300">Nama Lengkap</label>
+      <input type="text" x-model="formData.name" @blur="touched.name = true" @input="touched.name = true" :class="nameError ? 'border-rose-500/60' : 'border-slate-800'" class="w-full bg-slate-950 border px-4 py-2.5 text-xs rounded-xl text-white placeholder-slate-600 focus:outline-none focus:ring-4 transition-all" placeholder="Masukkan nama lo..." />
+      <span x-show="nameError" x-text="nameError" class="text-[10px] font-medium text-rose-400 block mt-0.5"></span>
+    </div>
+
+    <!-- Input: Email -->
+    <div class="space-y-1">
+      <label class="text-xs font-semibold text-slate-300">Alamat Email</label>
+      <input type="email" x-model="formData.email" @blur="touched.email = true" @input="touched.email = true" :class="emailError ? 'border-rose-500/60' : 'border-slate-800'" class="w-full bg-slate-950 border px-4 py-2.5 text-xs rounded-xl text-white placeholder-slate-600 focus:outline-none focus:ring-4 transition-all" placeholder="dion@studion.site" />
+      <span x-show="emailError" x-text="emailError" class="text-[10px] font-medium text-rose-400 block mt-0.5"></span>
+    </div>
+
+    <!-- Input: Pesan -->
+    <div class="space-y-1">
+      <label class="text-xs font-semibold text-slate-300">Pesan Proyek</label>
+      <textarea rows="4" x-model="formData.message" @blur="touched.message = true" @input="touched.message = true" :class="messageError ? 'border-rose-500/60' : 'border-slate-800'" class="w-full bg-slate-950 border px-4 py-3 text-xs rounded-xl text-white placeholder-slate-600 focus:outline-none focus:ring-4 transition-all resize-none" placeholder="Deskripsikan kebutuhan website lo..."></textarea>
+      <span x-show="messageError" x-text="messageError" class="text-[10px] font-medium text-rose-400 block mt-0.5"></span>
+    </div>
+
+    <!-- Tombol Submit -->
+    <div class="pt-2">
+      <button type="submit" :disabled="!isFormValid || isSubmitting" :class="!isFormValid || isSubmitting ? 'bg-slate-800 text-slate-500' : 'bg-purple-600 text-white shadow-lg'" class="w-full py-3 rounded-xl text-xs font-bold border border-transparent transition-all flex items-center justify-center gap-2">
+        <span x-text="isSubmitting ? 'Memproses Data...' : 'Kirim Pesan'"></span>
+      </button>
+    </div>
+  </form>
+</div>`
+---
+
+<Layout title="11. Form Handling & Validation - Blueprint UI">
+  <main
+    class="bg-slate-955 mx-auto max-w-4xl px-4 py-12 font-sans text-slate-100"
+  >
+    <!-- HEADER -->
+    <header class="mb-8 border-b border-slate-800 pb-6">
+      <div class="mb-2 flex items-center gap-3">
+        <span
+          class="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-amber-400"
+          >11. MENENGAH</span
+        >
+        <h1 class="text-2xl font-bold tracking-tight text-white">
+          Form Handling & Validation
+        </h1>
+      </div>
+      <p class="text-sm text-slate-400">
+        Uji coba validasi formulir instan (real-time) memanfaatkan reaktivitas
+        dua arah Alpine.js untuk memantau status eror, kekuatan karakter, dan
+        penguncian tombol aksi.
+      </p>
+    </header>
+
+    <!-- SECTION 1: Live Preview Playground -->
+    <section class="mb-12" aria-labelledby="preview-title">
+      <h2
+        id="preview-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Live Preview Playground
+      </h2>
+
+      <div
+        class="mx-auto max-w-xl rounded-2xl border border-slate-800 bg-slate-900/40 p-6 shadow-inner sm:p-8"
+      >
+        <div
+          x-data="{
+            formData: { name: '', email: '', message: '' },
+            touched: { name: false, email: false, message: false },
+            isSubmitting: false,
+            isSuccess: false,
+
+            get nameError() {
+              if (!this.touched.name) return '';
+              if (!this.formData.name.trim()) return 'Nama wajib diisi, bro!';
+              if (this.formData.name.length < 3) return 'Nama minimal 3 karakter ya.';
+              return '';
+            },
+            get emailError() {
+              if (!this.touched.email) return '';
+              if (!this.formData.email.trim()) return 'Email jangan dikosongin.';
+              const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+              if (!regex.test(this.formData.email)) return 'Format email lo salah tuh.';
+              return '';
+            },
+            get messageError() {
+              if (!this.touched.message) return '';
+              if (!this.formData.message.trim()) return 'Pesan kiriman wajib diisi.';
+              return '';
+            },
+            get isFormValid() {
+              const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+              return this.formData.name.length >= 3 &&
+                     regex.test(this.formData.email) &&
+                     this.formData.message.trim() !== '';
+            },
+
+            submitForm() {
+              if (!this.isFormValid) return;
+              this.isSubmitting = true;
+              setTimeout(() => {
+                this.isSubmitting = false;
+                this.isSuccess = true;
+                this.formData = { name: '', email: '', message: '' };
+                this.touched = { name: false, email: false, message: false };
+              }, 1500);
+            }
+          }"
+        >
+          <!-- Form Utama (Kerapatan space-y-2) -->
+          <form
+            x-show="!isSuccess"
+            @submit.prevent="submitForm()"
+            class="space-y-2"
+            novalidate
+          >
+            <div class="space-y-1">
+              <label class="text-[11px] font-semibold text-slate-300"
+                >Nama Lengkap</label
+              >
+              <input
+                type="text"
+                x-model="formData.name"
+                @blur="touched.name = true"
+                @input="touched.name = true"
+                :class="nameError ? 'border-rose-500/60 focus:border-rose-500 focus:ring-rose-500/20' : 'border-slate-800 focus:border-purple-500 focus:ring-purple-500/20'"
+                class="w-full rounded-xl border bg-slate-950 px-3 py-2 text-xs text-white placeholder-slate-700 transition-all focus:ring-4 focus:outline-none"
+                placeholder="Masukkan nama lo..."
+              />
+              <span
+                x-show="nameError"
+                x-text="nameError"
+                class="mt-0.5 block text-[10px] font-medium text-rose-400"
+                x-cloak></span>
+            </div>
+
+            <div class="space-y-1">
+              <label class="text-[11px] font-semibold text-slate-300"
+                >Alamat Email</label
+              >
+              <input
+                type="email"
+                x-model="formData.email"
+                @blur="touched.email = true"
+                @input="touched.email = true"
+                :class="emailError ? 'border-rose-500/60 focus:border-rose-500 focus:ring-rose-500/20' : 'border-slate-800 focus:border-purple-500 focus:ring-purple-500/20'"
+                class="w-full rounded-xl border bg-slate-950 px-3 py-2 text-xs text-white placeholder-slate-700 transition-all focus:ring-4 focus:outline-none"
+                placeholder="dion@studion.site"
+              />
+              <span
+                x-show="emailError"
+                x-text="emailError"
+                class="mt-0.5 block text-[10px] font-medium text-rose-400"
+                x-cloak></span>
+            </div>
+
+            <div class="space-y-1">
+              <label class="text-[11px] font-semibold text-slate-300"
+                >Pesan Proyek</label
+              >
+              <textarea
+                rows="3"
+                x-model="formData.message"
+                @blur="touched.message = true"
+                @input="touched.message = true"
+                :class="messageError ? 'border-rose-500/60 focus:border-rose-500 focus:ring-rose-500/20' : 'border-slate-800 focus:border-purple-500 focus:ring-purple-500/20'"
+                class="w-full resize-none rounded-xl border bg-slate-950 px-3 py-2 text-xs text-white placeholder-slate-700 transition-all focus:ring-4 focus:outline-none"
+                placeholder="Kebutuhan blueprint website lo, bro..."></textarea>
+              <span
+                x-show="messageError"
+                x-text="messageError"
+                class="mt-0.5 block text-[10px] font-medium text-rose-400"
+                x-cloak></span>
+            </div>
+
+            <div class="pt-2">
+              <button
+                type="submit"
+                :disabled="!isFormValid || isSubmitting"
+                :class="!isFormValid || isSubmitting ? 'bg-slate-800 text-slate-500 cursor-not-allowed border-slate-800' : 'bg-indigo-500 hover:bg-indigo-600 text-white font-bold shadow-lg shadow-amber-500/10 active:scale-98'"
+                class="flex w-full items-center justify-center gap-2 rounded-xl border border-transparent py-2.5 text-xs transition-all duration-200"
+              >
+                <i
+                  x-show="isSubmitting"
+                  class="fa-solid fa-circle-notch animate-spin text-sm"
+                  x-cloak></i>
+                <span
+                  x-text="isSubmitting ? 'Memproses Data...' : 'Kirim Pesan Formulir'"
+                ></span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Tampilan Sukses -->
+          <div
+            x-show="isSuccess"
+            x-transition.scale.95.duration.200ms
+            class="py-6 text-center"
+            x-cloak
+          >
+            <div
+              class="mx-auto mb-3 flex h-12 w-12 animate-bounce items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-xl text-emerald-400"
+            >
+              <i class="fa-solid fa-paper-plane"></i>
+            </div>
+            <h3 class="mb-0.5 text-sm font-bold text-white">
+              Pesan Berhasil Terkirim!
+            </h3>
+            <p class="mx-auto mb-4 max-w-xs text-[11px] text-slate-400">
+              Validasi Alpine.js lolos. Data sukses diproses tanpa page reload.
+            </p>
+            <button
+              @click="isSuccess = false"
+              class="rounded-lg border border-slate-700/40 bg-slate-800 px-3 py-1.5 text-[10px] text-slate-300 hover:bg-slate-700"
+              >Uji Coba Lagi</button
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: Code Snippet Block -->
+    <section class="mb-12" aria-labelledby="code-title">
+      <h2
+        id="code-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Clean Code (Production Ready)
+      </h2>
+      <article x-data="codeCopier" class="group relative">
+        <button
+          @click="copy()"
+          :class="copied ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900'"
+          class="absolute top-3 right-3 z-10 flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-medium backdrop-blur-sm transition-all duration-200 active:scale-95"
+        >
+          <i x-show="!copied" class="fa-regular fa-copy text-sm"></i>
+          <i
+            x-show="copied"
+            class="fa-solid fa-check text-sm text-emerald-400"
+            x-cloak></i>
+          <span x-text="copied ? 'Copied!' : 'Copy'"></span>
+        </button>
+        <pre
+          class="h-100 overflow-auto rounded-2xl border border-slate-800 bg-slate-900 p-5 pr-20 font-mono text-xs leading-relaxed text-slate-300"><code>{codeSnippet}</code></pre>
+      </article>
+    </section>
+
+    <!-- SECTION 3: Dokumentasi Teknis -->
+    <section aria-labelledby="doc-title">
+      <h2
+        id="doc-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Dokumentasi Logika
+      </h2>
+      <article
+        class="space-y-4 rounded-2xl border border-slate-800/60 bg-slate-900/50 p-5 text-xs leading-relaxed text-slate-400 md:text-sm"
+      >
+        <p>
+          <strong class="text-slate-200">1. Alur Regex Aman:</strong> Penulisan regex
+          dimodifikasi menggunakan konstruktor string standar untuk menghindari penumpukan
+          karakter backslash akibat kompilasi internal teks Astro.
+        </p>
+        <p>
+          <strong class="text-slate-200">2. Real-time Reactive UI:</strong> Sistem
+          tombol disabled dan status kelas warna bingkai input otomatis berubah seketika
+          mengikuti pemenuhan kriteria karakter minimum.
+        </p>
+      </article>
+    </section>
+
+    <!-- Tombol Kembali -->
+    <footer class="mt-12 border-t border-slate-900 pt-6">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 text-xs text-slate-500 transition-colors hover:text-white"
+      >
+        ← Kembali ke Dashboard Sandbox
+      </a>
+    </footer>
+  </main>
+</Layout>
+
+<script define:vars={{ codeSnippet }}>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('codeCopier', () => ({
+      copied: false,
+      codeText: codeSnippet,
+      copy() {
+        navigator.clipboard.writeText(this.codeText)
+        this.copied = true
+        setTimeout(() => {
+          this.copied = false
+        }, 2000)
+      },
+    }))
+  })
+</script>

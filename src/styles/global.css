@@ -1,0 +1,100 @@
+/* src/styles/global.css */
+@import 'tailwindcss';
+
+/* 1. Setup Local Font*/
+@font-face {
+  /* font-family: 'Nama Font';
+  src: url('/fonts/Nama-Font-Variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-display: swap;
+  font-style: normal; */
+}
+
+/* 2. Setup Font & Theme Kustom (Tailwind v4 Way) */
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Animasi Kustom untuk Konten */
+  --animate-fade-in: fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-fade-out: fade-out 0.4s ease-out forwards;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-out {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+  }
+}
+
+/* 3. Base & Reset Styling */
+@layer base {
+  /* 4. Menghilangkan Scrollbar saat Tidak Sedang Scroll (Modern CSS) */
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+    scrollbar-width: thin; /* Untuk Firefox */
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.3s ease;
+  }
+
+  html:hover {
+    scrollbar-color: var(--color-slate-300) transparent; /* Muncul tipis saat kursor di area web */
+  }
+
+  /* Untuk Chrome, Safari, dan Edge */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 99px;
+    transition: background 0.3s ease;
+  }
+
+  *:hover::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--color-slate-400) 40%, transparent);
+  }
+
+  body {
+    @apply overflow-x-hidden bg-slate-50 text-slate-900 antialiased;
+  }
+
+  /* 5. Menghilangkan Efek Flicker Alpine.js */
+  [x-cloak] {
+    display: none !important;
+  }
+}
+
+/* 6. Utility Class Standarisasi Spacing & Margin Tiap Section */
+@layer utilities {
+  /* Pasang ini di setiap tag <section> biar padding atas-bawahnya konsisten se-website */
+  .section-spacing {
+    @apply mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8;
+  }
+
+  /* Utility untuk container section yang punya background full-width */
+  .section-container {
+    @apply w-full overflow-hidden;
+  }
+}

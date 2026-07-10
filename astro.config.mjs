@@ -4,6 +4,7 @@ import { defineConfig } from 'astro/config'
 import tailwindcss from '@tailwindcss/vite'
 import alpinejs from '@astrojs/alpinejs'
 import sitemap from '@astrojs/sitemap'
+import vercel from '@astrojs/vercel'
 
 // https://astro.build/config
 export default defineConfig({
@@ -14,9 +15,11 @@ export default defineConfig({
   //   format: 'directory',
   // },
 
-  // output: 'static',
+  output: 'hybrid',
 
-  site: 'https://domain.com', // Pastikan atribut site ini ada
+  adapter: vercel(),
+
+  site: 'https://coba-fitur.vercel.app', // Pastikan atribut site ini ada
 
   vite: {
     plugins: [tailwindcss()],

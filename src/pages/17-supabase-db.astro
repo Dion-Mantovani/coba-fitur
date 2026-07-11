@@ -1,0 +1,432 @@
+---
+// src/pages/17-supabase-reviews.astro
+export const prerender = false // Wajib aktif di mode SSR agar data selalu ditarik fresh dari cloud
+
+import Layout from '../layouts/Layout.astro'
+import { supabase } from '../utils/supabase'
+
+// Mengambil data ulasan awal via SSR langsung saat halaman dimuat
+const { data: initialReviews } = await supabase
+  .from('reviews')
+  .select('*')
+  .order('created_at', { ascending: false })
+
+// CLEAN CODE BLUEPRINT: Menampilkan contoh fetch operasi CRUD lengkap untuk edukasi
+const clientCode = `// 1. OPERATION: CREATE (POST)
+await fetch('/api/reviews', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ username: 'Alex', rating: 5, comment: 'Gokil!' })
+});
+
+// 2. OPERATION: UPDATE (PUT)
+await fetch('/api/reviews', {
+  method: 'PUT',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ id: 12, rating: 4, comment: 'Ulasan setelah direvisi' })
+});
+
+// 3. OPERATION: DELETE (DELETE)
+await fetch(\`/api/reviews?id=\${id}\`, { method: 'DELETE' });`
+---
+
+<Layout title="17. Database & API Full CRUD (Supabase) - Blueprint UI">
+  <main
+    class="bg-slate-955 mx-auto max-w-4xl px-4 py-12 font-sans text-slate-100"
+    x-data={`reviewApp({ initial: ${JSON.stringify(initialReviews || [])} })`}
+  >
+    <!-- HEADER -->
+    <header class="mb-8 border-b border-slate-800 pb-6">
+      <div class="mb-2 flex items-center gap-3">
+        <span
+          class="rounded-md border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-rose-400"
+          >17. KOMPLEKS</span
+        >
+        <h1 class="text-2xl font-bold tracking-tight text-white">
+          Fullstack Database CRUD
+        </h1>
+      </div>
+      <p class="text-sm leading-relaxed text-slate-400">
+        Mengimplementasikan manajemen daur hidup data penuh (**Create, Read,
+        Update, Delete**) terintegrasi langsung dengan endpoint API internal
+        Astro dan database PostgreSQL cloud Supabase.
+      </p>
+    </header>
+
+    <div class="mb-12 grid grid-cols-1 gap-8 md:grid-cols-3">
+      <!-- KIRI: FORM INPUT / UPDATE REVIEW -->
+      <section class="md:col-span-1" aria-labelledby="form-title">
+        <h2
+          id="form-title"
+          class="mb-3 text-xs font-semibold tracking-wider text-slate-400 uppercase"
+        >
+          <span x-text="isEditMode ? 'Edit Ulasan Anda' : 'Tulis Ulasan Baru'"
+          ></span>
+        </h2>
+
+        <form
+          @submit.prevent="handleSubmit()"
+          class="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/30 p-5"
+        >
+          <div>
+            <label
+              class="mb-1 block text-[10px] font-semibold tracking-wider text-slate-400 uppercase"
+              >Nama Lengkap</label
+            >
+            <input
+              type="text"
+              x-model="form.username"
+              :disabled="isEditMode"
+              required
+              class="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white focus:border-emerald-500/50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder="Contoh: Alex J"
+            />
+            <p
+              x-show="isEditMode"
+              class="mt-1 text-[9px] text-slate-500"
+              x-cloak
+            >
+              *Nama tidak dapat diubah saat mode edit.
+            </p>
+          </div>
+
+          <div>
+            <label
+              class="mb-1 block text-[10px] font-semibold tracking-wider text-slate-400 uppercase"
+              >Rating Bintang</label
+            >
+            <select
+              x-model="form.rating"
+              class="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white focus:border-emerald-500/50 focus:outline-none"
+            >
+              <option value="5">⭐⭐⭐⭐⭐ (5 - Sempurna)</option>
+              <option value="4">⭐⭐⭐⭐ (4 - Bagus)</option>
+              <option value="3">⭐⭐⭐ (3 - Cukup)</option>
+              <option value="2">⭐⭐ (2 - Kurang)</option>
+              <option value="1">⭐ (1 - Buruk)</option>
+            </select>
+          </div>
+
+          <div>
+            <label
+              class="mb-1 block text-[10px] font-semibold tracking-wider text-slate-400 uppercase"
+              >Isi Ulasan</label
+            >
+            <textarea
+              x-model="form.comment"
+              rows="3"
+              required
+              class="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white focus:border-emerald-500/50 focus:outline-none"
+              placeholder="Ketik ulasan lo disini, bro..."></textarea>
+          </div>
+
+          <div class="space-y-2">
+            <button
+              type="submit"
+              :disabled="loading"
+              class="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2 text-xs font-medium text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
+            >
+              <span
+                x-text="isEditMode ? 'Simpan Perubahan 💾' : 'Kirim Ulasan 🚀'"
+              ></span>
+            </button>
+
+            <button
+              type="button"
+              x-show="isEditMode"
+              @click="cancelEdit()"
+              class="w-full rounded-xl bg-slate-800 py-1.5 text-xs font-medium text-slate-300 transition-colors hover:bg-slate-700"
+              x-cloak
+            >
+              Batal Edit
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- KANAN: LIVE REVIEWS GRID LIST WITH CRUD CONTROLS -->
+      <section class="md:col-span-2" aria-labelledby="list-title">
+        <h2
+          id="list-title"
+          class="mb-3 text-xs font-semibold tracking-wider text-slate-400 uppercase"
+        >
+          Daftar Ulasan Pengguna Terbaru
+        </h2>
+        <div
+          class="h-95 space-y-3 overflow-y-auto rounded-xl border border-slate-900/60 bg-slate-950/20 p-2 pr-2"
+        >
+          <template x-if="reviews.length === 0">
+            <div
+              class="rounded-xl border border-dashed border-slate-800 py-12 text-center"
+            >
+              <p class="text-xs text-slate-500 italic">
+                Belum ada ulasan masuk, bro!
+              </p>
+            </div>
+          </template>
+
+          <template x-for="item in reviews" :key="item.id">
+            <div
+              class="flex flex-col justify-between space-y-2 rounded-xl border border-slate-800/60 bg-slate-900 p-4 transition-all hover:border-slate-700"
+            >
+              <div>
+                <div class="flex items-center justify-between">
+                  <span
+                    class="text-xs font-bold text-white"
+                    x-text="item.username"></span>
+                  <span
+                    class="font-mono text-[10px] text-emerald-400"
+                    x-text="'⭐'.repeat(item.rating)"></span>
+                </div>
+                <p
+                  class="mt-1 text-[11px] leading-relaxed text-slate-400"
+                  x-text="item.comment"
+                >
+                </p>
+              </div>
+
+              <div
+                class="flex items-center justify-between border-t border-slate-950/80 pt-2 text-[9px] text-slate-500"
+              >
+                <span
+                  x-text="new Date(item.created_at).toLocaleDateString('id-ID', { hour: '2-digit', minute: '2-digit' })"
+                ></span>
+
+                <div class="flex items-center gap-3">
+                  <button
+                    @click="startEdit(item)"
+                    class="flex items-center gap-1 text-slate-400 transition-colors hover:text-amber-400"
+                  >
+                    <i class="fa-regular fa-pen-to-square"></i> Edit
+                  </button>
+                  <button
+                    @click="deleteReview(item.id)"
+                    class="flex items-center gap-1 text-slate-500 transition-colors hover:text-rose-400"
+                  >
+                    <i class="fa-regular fa-trash-can"></i> Hapus
+                  </button>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </section>
+    </div>
+
+    <!-- CODE SNIPPET (CLEAN CODE) -->
+    <section class="mb-12" aria-labelledby="code-title">
+      <h2
+        id="code-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Clean Code CRUD Fetch Operation
+      </h2>
+      <article x-data="codeCopier" class="group relative">
+        <button
+          @click="copy()"
+          :class="copied ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900'"
+          class="absolute top-3 right-3 z-10 flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-medium backdrop-blur-sm transition-all duration-200 active:scale-95"
+        >
+          <i x-show="!copied" class="fa-regular fa-copy text-sm"></i>
+          <span x-text="copied ? 'Copied!' : 'Copy'"></span>
+        </button>
+        <pre
+          class="h-100 overflow-auto rounded-2xl border border-slate-800 bg-slate-900 p-5 pr-20 font-mono text-xs leading-relaxed text-slate-300"><code>{clientCode}</code></pre>
+      </article>
+    </section>
+
+    <!-- 5. DOCUMENTATION / EDUKASI KONSEP (DOCS) -->
+    <section
+      class="border-t border-slate-900 pt-8"
+      aria-labelledby="docs-title"
+    >
+      <h2
+        id="docs-title"
+        class="mb-4 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Edukasi Arsitektur & Cara Kerja CRUD
+      </h2>
+
+      <div class="space-y-4 text-xs leading-relaxed text-slate-400">
+        <div class="rounded-xl border border-slate-900 bg-slate-900/20 p-4">
+          <h3
+            class="mb-1.5 flex items-center gap-2 text-xs font-bold text-white"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span> 1. Desain
+            REST API Route di Astro (Serverless Endpoints)
+          </h3>
+          <p>
+            Dengan memetakan berkas di dalam `src/pages/api/reviews.ts`, Astro
+            bertindak sebagai backend serverless. Kita mengekspos fungsi `GET`,
+            `POST`, `PUT`, dan `DELETE` yang menangkap berbagai metode request
+            HTTP dari client, memproses tipe data parameter, lalu meneruskannya
+            secara aman ke SDK database.
+          </p>
+        </div>
+
+        <div class="rounded-xl border border-slate-900 bg-slate-900/20 p-4">
+          <h3
+            class="mb-1.5 flex items-center gap-2 text-xs font-bold text-white"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span> 2. Jebakan
+            Silent Ignore dari Row Level Security (RLS)
+          </h3>
+          <p>
+            Karakteristik keamanan PostgreSQL di Supabase mewajibkan pembuatan
+            instruksi regulasi (**Policy**) eksplisit untuk setiap jenis mutasi
+            data. Jika gembok RLS aktif namun otorisasi `UPDATE` atau `DELETE`
+            untuk role anonim belum dideklarasikan, database akan merespons
+            dengan kode `200 OK` (seolah sukses) namun secara diam-diam membuang
+            mutasi tersebut tanpa memengaruhi baris data aktual (*0 rows
+            affected*).
+          </p>
+        </div>
+
+        <div class="rounded-xl border border-slate-900 bg-slate-900/20 p-4">
+          <h3
+            class="mb-1.5 flex items-center gap-2 text-xs font-bold text-white"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-sky-400"></span> 3. Sinkronisasi
+            Sinkron State & Optimistic UI
+          </h3>
+          <p>
+            Untuk menghindari waktu tunggu loading yang lambat bagi pengguna,
+            frontend memanfaatkan Alpine.js untuk memanipulasi *array state*
+            lokal secara langsung (*unshift* saat membuat, *mutate* saat
+            mengedit, dan *filter* saat menghapus). Setelah manipulasi lokal
+            selesai, sistem secara pararel mengirimkan sinyal asinkron ke API
+            Route untuk mengubah data inti di cloud.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="mt-12 border-t border-slate-900 pt-6">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 text-xs text-slate-500 transition-colors hover:text-white"
+      >
+        ← Kembali ke Dashboard Sandbox
+      </a>
+    </footer>
+  </main>
+</Layout>
+
+<script define:vars={{ clientCode }}>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('reviewApp', (config) => ({
+      reviews: config.initial,
+      loading: false,
+      isEditMode: false,
+      editId: null,
+      form: {
+        username: '',
+        rating: '5',
+        comment: '',
+      },
+
+      handleSubmit() {
+        if (this.isEditMode) {
+          this.updateReview()
+        } else {
+          this.submitReview()
+        }
+      },
+
+      async submitReview() {
+        this.loading = true
+        try {
+          const res = await fetch('/api/reviews', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(this.form),
+          })
+          const result = await res.json()
+          if (!res.ok) throw new Error(result.error)
+
+          this.reviews.unshift(result.data[0])
+          this.resetForm()
+        } catch (err) {
+          alert(err.message)
+        } finally {
+          this.loading = false
+        }
+      },
+
+      startEdit(item) {
+        this.isEditMode = true
+        this.editId = item.id
+        this.form.username = item.username
+        this.form.rating = String(item.rating)
+        this.form.comment = item.comment
+      },
+
+      cancelEdit() {
+        this.resetForm()
+      },
+
+      async updateReview() {
+        this.loading = true
+        try {
+          const res = await fetch('/api/reviews', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: this.editId,
+              rating: this.form.rating,
+              comment: this.form.comment,
+            }),
+          })
+          const result = await res.json()
+          if (!res.ok) throw new Error(result.error)
+
+          const idx = this.reviews.findIndex((r) => r.id === this.editId)
+          if (idx !== -1) {
+            this.reviews[idx].rating = Number(this.form.rating)
+            this.reviews[idx].comment = this.form.comment
+          }
+
+          this.resetForm()
+        } catch (err) {
+          alert(err.message)
+        } finally {
+          this.loading = false
+        }
+      },
+
+      async deleteReview(id) {
+        if (!confirm('Seriusan ulasan ini mau dihapus, bro?')) return
+
+        try {
+          const res = await fetch(`/api/reviews?id=${id}`, { method: 'DELETE' })
+          const result = await res.json()
+          if (!res.ok) throw new Error(result.error)
+
+          this.reviews = this.reviews.filter((r) => r.id !== id)
+        } catch (err) {
+          alert(err.message)
+        }
+      },
+
+      resetForm() {
+        this.isEditMode = false
+        this.editId = null
+        this.form.username = ''
+        this.form.rating = '5'
+        this.form.comment = ''
+      },
+    }))
+
+    Alpine.data('codeCopier', () => ({
+      copied: false,
+      codeText: clientCode,
+      copy() {
+        navigator.clipboard.writeText(this.codeText)
+        this.copied = true
+        setTimeout(() => {
+          this.copied = false
+        }, 2000)
+      },
+    }))
+  })
+</script>

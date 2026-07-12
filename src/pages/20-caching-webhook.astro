@@ -1,31 +1,40 @@
 ---
 // src/pages/20-supabase-cache.astro
-export const prerender = false // Tetap SSR agar Vercel Edge Network bisa memproses Header Cache
+export const prerender = false
 
 import Layout from '../layouts/Layout.astro'
 import { supabase } from '../utils/supabase'
 
-// ==========================================
-// TAHAP 1: MANTRA CACHE EDGE VERCEL (2 MENIT)
-// ==========================================
-// s-maxage=120 artinya halaman ini disimpan di satelit Vercel selama 120 detik saja
-Astro.response.headers.set(
-  'Cache-Control',
-  's-maxage=120, stale-while-revalidate=10',
-)
+// Ambil parameter rahasia dari URL query string (cth: ?bypass=MantraRahasiaClearCache123)
+const url = new URL(Astro.request.url)
+const bypassKey = url.searchParams.get('bypass')
+const secretToken = process.env.WEBHOOK_SECRET || 'MantraRahasiaClearCache123'
 
-// Ambil data dari Supabase secara server-side
+// KONDISI PINTAR: Jika dipanggil biasa, aktifkan gembok cache 2 menit.
+// Tapi jika dipanggil dengan kunci rahasia (?bypass=...), paksa Vercel membuang cache lama!
+if (bypassKey === secretToken) {
+  Astro.response.headers.set(
+    'Cache-Control',
+    'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+  )
+  Astro.response.headers.set('CDN-Cache-Control', 'no-store, max-age=0')
+} else {
+  Astro.response.headers.set(
+    'Cache-Control',
+    's-maxage=120, stale-while-revalidate=10',
+  )
+}
+
+// Ambil data dari Supabase
 const { data: currentItems } = await supabase
   .from('items')
   .select('*')
   .order('title', { ascending: true })
 
-// Ambil stempel waktu saat server Vercel melakukan render/fotokopi halaman ini
 const generatedAt = new Date().toLocaleTimeString('id-ID', {
   timeZone: 'Asia/Jakarta',
 })
 
-// Fungsi Server-Side: Cek apakah data row di DB status promo flash sale-nya aslinya masih aktif
 const isPromoValid = (item: any) => {
   if (!item.discount_price || !item.promo_ends_at) return false
   return new Date().getTime() < new Date(item.promo_ends_at).getTime()

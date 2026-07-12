@@ -1,19 +1,28 @@
 // src/pages/api/revalidate.ts
-export const prerender = false // Wajib jalan di server (SSR)
+export const prerender = false
 
 import type { APIRoute } from 'astro'
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    // 1. Ambil mantra rahasia dari HTTP Headers yang dikirim Supabase
     const authHeader = request.headers.get('x-webhook-secret')
-    const secretKey = import.meta.env.WEBHOOK_SECRET
 
-    // 2. Validasi Keamanan: Jika kosong atau gak cocok, langsung tolak di pintu depan
+    // GUNAKAN TRIK DUAL-READING:
+    // Kita cek lewat import.meta.env, KALO KOSONG, paksa ambil dari runtime process.env Vercel.
+    // Kalo dua-duanya kosong (karena belum sinkron), kita kunci ke String Cadangan.
+    const secretKey =
+      import.meta.env.WEBHOOK_SECRET ||
+      process.env.WEBHOOK_SECRET ||
+      'MantraRahasiaClearCache123'
+
     if (!authHeader || authHeader !== secretKey) {
+      console.error(
+        `Gagal Validasi! Supabase mengirim: "${authHeader}", Kunci Vercel: "${secretKey}"`,
+      )
       return new Response(
         JSON.stringify({
-          error: 'Mantra salah atau tidak ada, akses ditolak!',
+          error: 'Mantra salah, akses ditolak!',
+          debug: { dikirim: authHeader, dikenali: secretKey },
         }),
         {
           status: 401,
@@ -22,22 +31,18 @@ export const POST: APIRoute = async ({ request }) => {
       )
     }
 
-    // 3. Ambil data JSON kiriman Supabase (opsional, buat log saja)
     const body = await request.json()
 
-    // 4. MANTRA PAMUNGKAS VERCEL:
-    // Kita kirim instruksi ke Vercel Edge Network untuk menghancurkan cache halaman 20 saat ini juga.
-    // Response ini menggunakan header khusus Vercel untuk on-demand revalidation.
     return new Response(
       JSON.stringify({
         revalidated: true,
-        message: `Sukses! Cache halaman 20 dihancurkan karena aksi ${body.type} di Supabase.`,
+        message: 'Sukses menghancurkan cache halaman 20!',
       }),
       {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
-          'x-vercel-revalidate': '1', // Sinyal pembersih cache global Vercel
+          'x-vercel-revalidate': '1',
           'Cache-Control': 'no-store, must-revalidate',
         },
       },
@@ -45,7 +50,6 @@ export const POST: APIRoute = async ({ request }) => {
   } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
     })
   }
 }

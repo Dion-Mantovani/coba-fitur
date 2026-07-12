@@ -6,46 +6,39 @@ import type { APIRoute } from 'astro'
 export const POST: APIRoute = async ({ request }) => {
   try {
     const authHeader = request.headers.get('x-webhook-secret')
-
-    // GUNAKAN TRIK DUAL-READING:
-    // Kita cek lewat import.meta.env, KALO KOSONG, paksa ambil dari runtime process.env Vercel.
-    // Kalo dua-duanya kosong (karena belum sinkron), kita kunci ke String Cadangan.
     const secretKey =
       import.meta.env.WEBHOOK_SECRET ||
       process.env.WEBHOOK_SECRET ||
       'MantraRahasiaClearCache123'
 
     if (!authHeader || authHeader !== secretKey) {
-      console.error(
-        `Gagal Validasi! Supabase mengirim: "${authHeader}", Kunci Vercel: "${secretKey}"`,
-      )
-      return new Response(
-        JSON.stringify({
-          error: 'Mantra salah, akses ditolak!',
-          debug: { dikirim: authHeader, dikenali: secretKey },
-        }),
-        {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      )
+      return new Response(JSON.stringify({ error: 'Akses ditolak!' }), {
+        status: 401,
+      })
     }
 
-    const body = await request.json()
+    // 1. Dapatkan domain origin dinamis web lo (cth: https://coba-fitur.vercel.app)
+    const requestUrl = new URL(request.url)
+    const domainOrigin = requestUrl.origin
+
+    // 2. JALUR PINTAS: API langsung nembak halaman 20 secara internal
+    // dengan membawa parameter khusus untuk memaksa Vercel memperbarui cache-nya.
+    const targetUrl = `${domainOrigin}/20-caching-webhook?bypass=true`
+
+    await fetch(targetUrl, {
+      method: 'GET',
+      headers: {
+        'x-vercel-revalidate': '1',
+        'Cache-Control': 'no-cache',
+      },
+    })
 
     return new Response(
       JSON.stringify({
-        revalidated: true,
-        message: 'Sukses menghancurkan cache halaman 20!',
+        success: true,
+        message: 'Sinyal Webhook sukses dikonversi menjadi hard purge! ⚡',
       }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'x-vercel-revalidate': '1',
-          'Cache-Control': 'no-store, must-revalidate',
-        },
-      },
+      { status: 200 },
     )
   } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {

@@ -52,6 +52,7 @@ if (cachedData) {
       items: currentItems,
       createdAt: generatedAt,
     }),
+    { ex: 86400 }, // 24 jam reset atau tembak ulang ke supabase
   )
 }
 

@@ -2,6 +2,19 @@
 export const prerender = false
 
 import type { APIRoute } from 'astro'
+import { Redis } from '@upstash/redis'
+
+// Inisialisasi Redis menggunakan Env Vercel
+const redis = new Redis({
+  url:
+    import.meta.env.UPSTASH_REDIS_REST_URL ||
+    process.env.UPSTASH_REDIS_REST_URL ||
+    '',
+  token:
+    import.meta.env.UPSTASH_REDIS_REST_TOKEN ||
+    process.env.UPSTASH_REDIS_REST_TOKEN ||
+    '',
+})
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -17,22 +30,16 @@ export const POST: APIRoute = async ({ request }) => {
       })
     }
 
-    // MANTRA RESMI VERCEL:
-    // Kita langsung beri tahu CDN Vercel: "Woi, hancurkan cache untuk PATH /20-supabase-cache detik ini juga!"
+    // KONSEP WEBHOOK MURNI:
+    // Hapus total data ber-key 'supabase_items_cache' di memori Redis detik ini juga!
+    await redis.del('supabase_items_cache')
+
     return new Response(
       JSON.stringify({
-        revalidated: true,
-        message: 'Cache halaman 20 berhasil dieksekusi!',
+        success: true,
+        message: 'Webhook Sukses! Memori Redis Berhasil Dibersihkan Instan! ⚡',
       }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          // Ini adalah header sakti Vercel untuk menargetkan path spesifik yang mau di-clear cachenya
-          'x-vercel-revalidate': '1',
-          'x-vercel-revalidate-paths': '/20-caching-webhook',
-        },
-      },
+      { status: 200 },
     )
   } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {

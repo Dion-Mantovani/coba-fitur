@@ -17,28 +17,22 @@ export const POST: APIRoute = async ({ request }) => {
       })
     }
 
-    // 1. Dapatkan domain origin dinamis web lo (cth: https://coba-fitur.vercel.app)
-    const requestUrl = new URL(request.url)
-    const domainOrigin = requestUrl.origin
-
-    // 2. JALUR PINTAS: API langsung nembak halaman 20 secara internal
-    // dengan membawa parameter khusus untuk memaksa Vercel memperbarui cache-nya.
-    const targetUrl = `${domainOrigin}/20-caching-webhook?bypass=true`
-
-    await fetch(targetUrl, {
-      method: 'GET',
-      headers: {
-        'x-vercel-revalidate': '1',
-        'Cache-Control': 'no-cache',
-      },
-    })
-
+    // MANTRA RESMI VERCEL:
+    // Kita langsung beri tahu CDN Vercel: "Woi, hancurkan cache untuk PATH /20-supabase-cache detik ini juga!"
     return new Response(
       JSON.stringify({
-        success: true,
-        message: 'Sinyal Webhook sukses dikonversi menjadi hard purge! ⚡',
+        revalidated: true,
+        message: 'Cache halaman 20 berhasil dieksekusi!',
       }),
-      { status: 200 },
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          // Ini adalah header sakti Vercel untuk menargetkan path spesifik yang mau di-clear cachenya
+          'x-vercel-revalidate': '1',
+          'x-vercel-revalidate-paths': '/20-supabase-cache',
+        },
+      },
     )
   } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {

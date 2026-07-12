@@ -50,7 +50,7 @@ const isPromoValid = (item: any) => {
       <p class="text-sm leading-relaxed text-slate-400">
         Eksperimen Tahap 1: Mengaktifkan *Edge Cache Control* berdurasi **1
         Menit**. Halaman disajikan kilat dari satelit Vercel CDN. Selama jendela
-        60 detik ini, data akan terkunci membatu meskipun data di database
+        2 menit ini, data akan terkunci membatu meskipun data di database
         Supabase telah lo ubah.
       </p>
     </header>
@@ -85,7 +85,7 @@ const isPromoValid = (item: any) => {
         <code
           class="rounded-lg border border-slate-900 bg-slate-950 px-2 py-1.5 font-mono text-[10px] text-emerald-400"
         >
-          Cache-Control: s-maxage=60
+          Cache-Control: s-maxage=120
         </code>
       </div>
     </section>

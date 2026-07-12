@@ -1,0 +1,396 @@
+---
+// src/pages/18-supabase-search.astro
+export const prerender = false // Mengaktifkan SSR agar data awal ditarik real-time saat load
+
+import Layout from '../layouts/Layout.astro'
+import { supabase } from '../utils/supabase'
+
+// Jalur Opsi B: Narik seluruh data 1x saja dari database Supabase secara server-side
+const { data: allItems } = await supabase
+  .from('items')
+  .select('*')
+  .order('title', { ascending: true })
+
+// Ekstrak kategori unik untuk tombol filter di UI
+const categories = [...new Set(allItems?.map((item) => item.category) || [])]
+
+// CLEAN CODE BLUEPRINT: Contoh kodingan perbandingan arsitektur pencarian untuk bahan belajar
+const clientCode = `// OPSI B: Client-Side Memory Filtering (Pendekatan Yang Kita Gunakan)
+// 1. Ambil data 1x di Server (Astro) saat halaman dimuat
+const { data } = await supabase.from('items').select('*');
+
+// 2. Filter di Frontend menggunakan Alpine.js (Nol Request Tambahan)
+get filteredItems() {
+  return this.sourceItems.filter(item => {
+    const matchCategory = this.selectedCategory === 'All' || item.category === this.selectedCategory;
+    const matchTitle = item.title.toLowerCase().includes(this.searchQuery.toLowerCase());
+    return matchCategory && matchTitle;
+  });
+}
+
+// -------------------------------------------------------------
+// ALTERNATIF JALUR A: Server-Side Realtime Search (Bisa Boros API)
+// Harus nembak endpoint API setiap user mengetik (Memanfaatkan operator 'ilike')
+const { data } = await supabase
+  .from('items')
+  .select('*')
+  .ilike('title', \`%\${query}%\`);`
+---
+
+<Layout title="18. Search & Client Filter - Blueprint UI">
+  <main
+    class="mx-auto max-w-4xl bg-slate-950 px-4 py-12 font-sans text-slate-100"
+    x-data={`searchApp({ sourceData: ${JSON.stringify(allItems || [])} })`}
+  >
+    <!-- HEADER -->
+    <header class="mb-8 border-b border-slate-800 pb-6">
+      <div class="mb-2 flex items-center gap-3">
+        <span
+          class="rounded-md border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-rose-400"
+          >18. KOMPLEKS</span
+        >
+        <h1 class="text-2xl font-bold tracking-tight text-white">
+          Client-Side Search & Filter
+        </h1>
+      </div>
+      <p class="text-sm leading-relaxed text-slate-400">
+        Mengimplementasikan pencarian instan *Search-as-you-type* dengan
+        pengaman *Debounce*, kotak saran otomatis (*Live Autocomplete*), dan
+        filter kategori. Seluruh proses penyaringan berjalan di memori browser
+        (Opsi B) sehingga menghemat kuota API database Supabase menjadi **0
+        request per ketikan**.
+      </p>
+    </header>
+
+    <!-- WORKSPACE GRID -->
+    <div class="mb-8 grid grid-cols-1 gap-8 md:grid-cols-3">
+      <!-- KIRI: CONTROLS & AUTOCOMPLETE -->
+      <section class="space-y-6 md:col-span-1" aria-labelledby="filter-title">
+        <div>
+          <h2
+            id="filter-title"
+            class="mb-3 text-xs font-semibold tracking-wider text-slate-400 uppercase"
+          >
+            Pencarian & Saran
+          </h2>
+
+          <!-- INPUT SEARCH DENGAN DEBOUNCE & AUTOCOMPLETE CONTROLLER -->
+          <div class="relative" @click.away="showSuggestions = false">
+            <input
+              type="text"
+              x-model.debounce.300ms="searchQuery"
+              @focus="showSuggestions = true"
+              @keydown.escape="showSuggestions = false"
+              class="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2.5 text-xs text-white focus:border-sky-500/50 focus:outline-none"
+              placeholder="Ketik produk atau tag (cth: nike)..."
+            />
+
+            <!-- LIVE AUTOCOMPLETE BOX -->
+            <div
+              x-show="showSuggestions && autocompleteList.length > 0"
+              x-transition
+              class="absolute z-20 mt-1.5 max-h-48 w-full space-y-1 overflow-y-auto rounded-xl border border-slate-800 bg-slate-900 p-1.5 shadow-xl"
+              x-cloak
+            >
+              <template
+                x-for="suggestion in autocompleteList"
+                :key="suggestion"
+              >
+                <button
+                  @click="selectSuggestion(suggestion)"
+                  class="flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-[11px] text-slate-300 transition-colors hover:bg-slate-800 hover:text-white"
+                >
+                  <span x-text="suggestion"></span>
+                  <span class="font-mono text-[9px] text-slate-500"
+                    >rekomendasi</span
+                  >
+                </button>
+              </template>
+            </div>
+          </div>
+        </div>
+
+        <!-- FILTER KATEGORI -->
+        <div>
+          <h3
+            class="mb-3 text-xs font-semibold tracking-wider text-slate-400 uppercase"
+          >
+            Kategori Produk
+          </h3>
+          <div class="flex flex-col gap-2">
+            <button
+              @click="selectedCategory = 'All'"
+              :class="selectedCategory === 'All' ? 'bg-sky-600 text-white border-sky-500' : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:text-white'"
+              class="w-full rounded-xl border px-4 py-2 text-left text-xs transition-all"
+            >
+              📂 Semua Kategori (<span x-text="sourceItems.length"></span>)
+            </button>
+
+            {
+              categories.map((cat) => (
+                <button
+                  @click={`selectedCategory = '${cat}'`}
+                  x-bind:class={`selectedCategory === '${cat}' ? 'bg-sky-600 text-white border-sky-500' : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:text-white'`}
+                  class="w-full rounded-xl border px-4 py-2 text-left text-xs capitalize transition-all"
+                >
+                  📁 {cat} (
+                  <span
+                    x-text={`sourceItems.filter(i => i.category === '${cat}').length`}
+                  />
+                  )
+                </button>
+              ))
+            }
+          </div>
+        </div>
+
+        <!-- STATS BANNER -->
+        <div
+          class="space-y-1 rounded-xl border border-slate-900 bg-slate-950/40 p-4"
+        >
+          <div
+            class="font-mono text-[10px] tracking-wider text-slate-500 uppercase"
+          >
+            API Request Counter
+          </div>
+          <div class="text-xs text-slate-300">
+            Total Request ke Supabase: <span
+              class="font-mono font-bold text-emerald-400">1x</span
+            >
+            <span class="text-slate-500">(On Load)</span>
+          </div>
+          <div class="mt-1 text-[10px] leading-relaxed text-slate-500 italic">
+            *Silakan ketik sepuasnya, tidak akan memicu API request tambahan!
+          </div>
+        </div>
+      </section>
+
+      <!-- KANAN: LIVE DISPLAY HASIL FILTER -->
+      <section class="md:col-span-2" aria-labelledby="result-title">
+        <div class="mb-3 flex items-center justify-between">
+          <h2
+            id="result-title"
+            class="text-xs font-semibold tracking-wider text-slate-400 uppercase"
+          >
+            Hasil Pencarian Memori
+          </h2>
+          <span
+            class="rounded-md border border-slate-800 bg-slate-900 px-2 py-0.5 font-mono text-[10px] text-slate-400"
+          >
+            Ditemukan: <span
+              x-text="filteredItems.length"
+              class="font-bold text-white"></span> barang
+          </span>
+        </div>
+
+        <!-- PRODUCTS CONTAINER GRID -->
+        <div class="max-h-94 space-y-3 overflow-y-auto pr-2">
+          <template x-if="filteredItems.length === 0">
+            <div
+              class="rounded-2xl border border-dashed border-slate-800 bg-slate-950/10 py-16 text-center"
+            >
+              <p class="text-xs text-slate-500 italic">
+                Waduh, barang atau tag yang lo cari gak ketemu, bro...
+              </p>
+            </div>
+          </template>
+
+          <template x-for="item in filteredItems" :key="item.id">
+            <div
+              class="flex items-center justify-between rounded-xl border border-slate-800/60 bg-slate-900 p-4 transition-all hover:border-slate-700"
+            >
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span
+                    class="rounded border border-slate-800 bg-slate-950 px-1.5 py-0.5 font-mono text-[9px] text-slate-400 capitalize"
+                    x-text="item.category"></span>
+                  <h4 class="text-xs font-bold text-white" x-text="item.title">
+                  </h4>
+                </div>
+
+                <!-- TAGS RENDERING -->
+                <div class="flex flex-wrap gap-1 pt-1">
+                  <template x-for="tag in item.tags" :key="tag">
+                    <span
+                      class="py-0.2 rounded-full border border-sky-500/10 bg-sky-500/5 px-1.5 font-mono text-[8px] text-sky-400"
+                      x-text="'#'+tag"></span>
+                  </template>
+                </div>
+              </div>
+
+              <!-- FORMAT RUPIAH VIA INLINE JS -->
+              <div class="text-right">
+                <span
+                  class="font-mono text-xs font-bold text-emerald-400"
+                  x-text="new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.price)"
+                ></span>
+              </div>
+            </div>
+          </template>
+        </div>
+      </section>
+    </div>
+
+    <!-- CODE SNIPPET (CLEAN CODE) -->
+    <section class="mb-12" aria-labelledby="code-title">
+      <h2
+        id="code-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Clean Code Integration (Architecture Comparison)
+      </h2>
+      <article x-data="codeCopier" class="group relative">
+        <button
+          @click="copy()"
+          :class="copied ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900'"
+          class="absolute top-3 right-3 z-10 flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-medium backdrop-blur-sm transition-all duration-200 active:scale-95"
+        >
+          <i x-show="!copied" class="fa-regular fa-copy text-sm"></i>
+          <span x-text="copied ? 'Copied!' : 'Copy'"></span>
+        </button>
+        <pre
+          class="h-100 overflow-auto rounded-2xl border border-slate-800 bg-slate-900 p-5 pr-20 font-mono text-xs leading-relaxed text-slate-300"><code>{clientCode}</code></pre>
+      </article>
+    </section>
+
+    <!-- DOCUMENTATION / EDUKASI KONSEP (DOCS) -->
+    <section
+      class="border-t border-slate-900 pt-8"
+      aria-labelledby="docs-title"
+    >
+      <h2
+        id="docs-title"
+        class="mb-4 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Edukasi Arsitektur Search & Filter
+      </h2>
+
+      <div class="space-y-4 text-xs leading-relaxed text-slate-400">
+        <div class="rounded-xl border border-slate-900 bg-slate-900/20 p-4">
+          <h3
+            class="mb-1.5 flex items-center gap-2 text-xs font-bold text-white"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-sky-400"></span> 1. Keuntungan
+            Pendekatan Client-Side Memory Filtering (Opsi B)
+          </h3>
+          <p>
+            Dengan mengambil seluruh koleksi baris dari tabel `items` di sisi
+            server sebanyak **satu kali** sewaktu inisiasi SSR, frontend
+            memiliki replika data lokal di dalam *state* Alpine.js. Seluruh
+            filter teks, kategori, dan pencarian tag diproses secara lokal.
+            Keunggulannya adalah kecepatan eksekusi instan (0ms internet
+            latency) dan menekan tagihan penggunaan/kuota kuantitas API database
+            Supabase seminimal mungkin. Pendekatan ini sangat direkomendasikan
+            untuk dataset berukuran kecil hingga menengah (di bawah 2.000 baris
+            data).
+          </p>
+        </div>
+
+        <div class="rounded-xl border border-slate-900 bg-slate-900/20 p-4">
+          <h3
+            class="mb-1.5 flex items-center gap-2 text-xs font-bold text-white"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span> 2. Fungsi
+            Mekanisme Debouncing Kritis (.debounce.300ms)
+          </h3>
+          <p>
+            Meskipun pemrosesan di Opsi B tidak menyentuh server, penggunaan
+            modifikator `.debounce` pada `x-model` tetap krusial untuk mencegah
+            pemborosan siklus komputasi (*CPU cycles*) di sisi browser pengguna.
+            Debouncing menunda kalkulasi fungsi penyaringan data array sampai
+            pengguna berhenti mengetik selama rentang waktu 300 milidetik,
+            mencegah terjadinya lag render antarmuka pada perangkat
+            ber-spesifikasi rendah.
+          </p>
+        </div>
+
+        <div class="rounded-xl border border-slate-900 bg-slate-900/20 p-4">
+          <h3
+            class="mb-1.5 flex items-center gap-2 text-xs font-bold text-white"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span> 3. Algoritma
+            Rekomendasi Live Autocomplete
+          </h3>
+          <p>
+            Kotak saran (*Suggestion Box*) bekerja dengan memindai string
+            parsial yang sedang diketik pengguna secara *realtime*,
+            mencocokkannya ke dalam properti `title` dan elemen internal di
+            dalam array `tags`, lalu mengumpulkannya ke dalam objek JavaScript
+            `Set()` untuk menjamin tidak adanya duplikasi kata kunci yang
+            disarankan kepada user sebelum disajikan ke UI.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- BACK FOOTER -->
+    <footer class="mt-12 border-t border-slate-900 pt-6">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 text-xs text-slate-500 transition-colors hover:text-white"
+      >
+        ← Kembali ke Dashboard Sandbox
+      </a>
+    </footer>
+  </main>
+</Layout>
+
+<script define:vars={{ clientCode }}>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('searchApp', (config) => ({
+      sourceItems: config.sourceData,
+      searchQuery: '',
+      selectedCategory: 'All',
+      showSuggestions: false,
+
+      get filteredItems() {
+        return this.sourceItems.filter((item) => {
+          const matchCategory =
+            this.selectedCategory === 'All' ||
+            item.category === this.selectedCategory
+          const query = this.searchQuery.toLowerCase().trim()
+          const matchTitle = item.title.toLowerCase().includes(query)
+          const matchTags = item.tags.some((tag) =>
+            tag.toLowerCase().includes(query),
+          )
+          return matchCategory && (matchTitle || matchTags)
+        })
+      },
+
+      get autocompleteList() {
+        if (!this.searchQuery.trim()) return []
+        const query = this.searchQuery.toLowerCase().trim()
+        const suggestions = new Set()
+
+        this.sourceItems.forEach((item) => {
+          if (item.title.toLowerCase().includes(query)) {
+            suggestions.add(item.title)
+          }
+          item.tags.forEach((tag) => {
+            if (tag.toLowerCase().includes(query)) {
+              suggestions.add(tag)
+            }
+          })
+        })
+        return Array.from(suggestions).slice(0, 5)
+      },
+
+      selectSuggestion(value) {
+        this.searchQuery = value
+        this.showSuggestions = false
+      },
+    }))
+
+    Alpine.data('codeCopier', () => ({
+      copied: false,
+      codeText: clientCode,
+      copy() {
+        navigator.clipboard.writeText(this.codeText)
+        this.copied = true
+        setTimeout(() => {
+          this.copied = false
+        }, 2000)
+      },
+    }))
+  })
+</script>

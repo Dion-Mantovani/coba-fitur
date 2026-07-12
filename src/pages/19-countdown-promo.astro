@@ -1,0 +1,575 @@
+---
+// src/pages/19-supabase-promo.astro
+export const prerender = false
+
+import Layout from '../layouts/Layout.astro'
+import { supabase } from '../utils/supabase'
+
+// Ambil seluruh data produk dari tabel items via SSR saat load awal
+const { data: currentItems } = await supabase
+  .from('items')
+  .select('*')
+  .order('title', { ascending: true })
+
+// CLEAN CODE BLUEPRINT: Contoh dokumentasi teknik pengelolaan data waktu (Temporal Constraints)
+const clientCode = `// 1. LOGIKA UTAMA: ENGINE TICKING & TRANSISI STATE OTOMATIS (TANPA REFRESH)
+updateAllCountdowns() {
+  const now = new Date().getTime();
+
+  this.items.forEach(item => {
+    const end = new Date(item.promo_ends_at).getTime();
+    const diff = end - now;
+
+    if (diff > 0) {
+      this.promoStatus[item.id] = 'ACTIVE'; // Harga Coret + Jam Mundur Live
+    } else if (now >= end && now < (end + 60000)) {
+      this.promoStatus[item.id] = 'JUST_EXPIRED'; // Ghost Notice Aktif (1 Menit)
+      this.relativeTime[item.id] = this.getFuzzyRelativeTime(end); // Pembulatan Waktu Lampau
+    } else {
+      this.promoStatus[item.id] = 'NORMAL'; // UI Bersih Kembali
+    }
+  });
+}
+
+// 2. DYNAMIC FUZZY TIME CALCULATOR (Menggunakan Intl.RelativeTimeFormat)
+getFuzzyRelativeTime(endTimeMs) {
+  const diffMinutes = Math.max(1, Math.round((new Date().getTime() - endTimeMs) / 60000));
+  const rtf = new Intl.RelativeTimeFormat('id', { numeric: 'always' });
+  return rtf.format(-diffMinutes, 'minute'); // Output: "1 menit yang lalu"
+}`
+---
+
+<Layout title="19. Flash Sale Countdown & Promo Controller">
+  <main
+    class="bg-slate-955 mx-auto max-w-5xl px-4 py-12 font-sans text-slate-100"
+    x-data={`promoApp({ initialItems: ${JSON.stringify(currentItems || [])} })`}
+  >
+    <!-- HEADER -->
+    <header class="mb-8 border-b border-slate-800 pb-6">
+      <div class="mb-2 flex items-center gap-3">
+        <span
+          class="rounded-md border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-rose-400"
+          >19. KOMPLEKS</span
+        >
+        <h1 class="text-2xl font-bold tracking-tight text-white">
+          Flash Sale & Countdown Timer
+        </h1>
+      </div>
+      <p class="text-sm leading-relaxed text-slate-400">
+        Mengelola data berbasis waktu (*Temporal Constraints*). Sisi kiri
+        bertindak sebagai panel admin untuk menyuntikkan diskon
+        nominal/persentase, sedangkan sisi kanan mensimulasikan *storefront*
+        dengan kalkulasi harga coret, jam hitung mundur, dan label waktu relatif
+        lampau.
+      </p>
+    </header>
+
+    <!-- WORKSPACE SPLIT LAYOUT -->
+    <div class="mb-12 grid grid-cols-1 gap-8 md:grid-cols-3">
+      <!-- SISI KIRI: PANEL ADMIN PROMO CONTROLLER -->
+      <section class="md:col-span-1" aria-labelledby="admin-title">
+        <h2
+          id="admin-title"
+          class="mb-3 text-xs font-semibold tracking-wider text-slate-400 uppercase"
+        >
+          🛠️ Admin Promo Controller
+        </h2>
+
+        <form
+          @submit.prevent="submitPromo()"
+          class="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/40 p-5"
+        >
+          <div>
+            <label
+              class="mb-1 block text-[10px] font-semibold tracking-wider text-slate-400 uppercase"
+              >Pilih Produk</label
+            >
+            <select
+              x-model="adminForm.id"
+              @change="handleProductChange()"
+              required
+              class="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white focus:border-amber-500/50 focus:outline-none"
+            >
+              <option value="">-- Pilih Barang di DB --</option>
+              <template x-for="product in items" :key="product.id">
+                <option :value="product.id" x-text="product.title"></option>
+              </template>
+            </select>
+          </div>
+
+          <div
+            x-show="selectedProductPrice > 0"
+            class="flex items-center justify-between rounded-xl border border-slate-900 bg-slate-950 p-2.5 text-[11px]"
+            x-cloak
+          >
+            <span class="text-slate-500">Harga Basis DB:</span>
+            <span
+              class="font-mono font-bold text-white"
+              x-text="formatRupiah(selectedProductPrice)"></span>
+          </div>
+
+          <div>
+            <label
+              class="mb-1 block text-[10px] font-semibold tracking-wider text-slate-400 uppercase"
+              >Skema Potongan</label
+            >
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                @click="adminForm.calcType = 'nominal'; calculateDiscountPrice()"
+                :class="adminForm.calcType === 'nominal' ? 'bg-amber-600 border-amber-500 text-white' : 'bg-slate-950 border-slate-800 text-slate-400'"
+                class="rounded-lg border py-1.5 text-[10px] font-bold transition-all"
+                >Nominal (Rupiah)</button
+              >
+              <button
+                type="button"
+                @click="adminForm.calcType = 'percent'; calculateDiscountPrice()"
+                :class="adminForm.calcType === 'percent' ? 'bg-amber-600 border-amber-500 text-white' : 'bg-slate-950 border-slate-800 text-slate-400'"
+                class="rounded-lg border py-1.5 text-[10px] font-bold transition-all"
+                >Persentase (%)</button
+              >
+            </div>
+          </div>
+
+          <div>
+            <label
+              class="mb-1 block text-[10px] font-semibold tracking-wider text-slate-400 uppercase"
+              x-text="adminForm.calcType === 'nominal' ? 'Jumlah Potongan (Rp)' : 'Persen Diskon (%)'"
+            ></label>
+            <input
+              type="number"
+              x-model="adminForm.calcValue"
+              @input="calculateDiscountPrice()"
+              required
+              min="1"
+              class="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white focus:border-amber-500/50 focus:outline-none"
+              :placeholder="adminForm.calcType === 'nominal' ? 'Cth: 50000' : 'Cth: 20'"
+            />
+          </div>
+
+          <div
+            x-show="adminForm.id && adminForm.discount_price > 0"
+            class="space-y-1 rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-[11px]"
+            x-cloak
+          >
+            <div class="flex justify-between">
+              <span class="text-slate-400">Harga Akhir Promo:</span><span
+                class="font-mono font-bold text-amber-400"
+                x-text="formatRupiah(adminForm.discount_price)"></span>
+            </div>
+          </div>
+
+          <div>
+            <label
+              class="mb-1 block text-[10px] font-semibold tracking-wider text-slate-400 uppercase"
+              >Batas Akhir Waktu Promo</label
+            >
+            <input
+              type="datetime-local"
+              x-model="adminForm.promo_ends_at"
+              required
+              class="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-white focus:border-amber-500/50 focus:outline-none"
+            />
+            <p class="mt-1 text-[9px] leading-normal text-slate-500">
+              *Gunakan waktu di masa depan agar hitung mundur aktif, bro.
+            </p>
+          </div>
+
+          <button
+            type="submit"
+            :disabled="loading || !adminForm.id"
+            class="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-600 py-2.5 text-xs font-bold text-white transition-colors hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <span
+              x-text="loading ? 'Sinkronisasi DB...' : 'Aktifkan Flash Sale ⚡'"
+            ></span>
+          </button>
+        </form>
+      </section>
+
+      <!-- SISI KANAN: STOREFRONT DISPLAY & LIVE COUNTDOWN TIMER -->
+      <section class="md:col-span-2" aria-labelledby="store-title">
+        <h2
+          id="store-title"
+          class="mb-3 text-xs font-semibold tracking-wider text-slate-400 uppercase"
+        >
+          🛍️ Live Flash Sale Storefront
+        </h2>
+
+        <div class="max-h-132.5 space-y-3 overflow-y-auto pr-2">
+          <template x-for="(item, index) in items" :key="item.id">
+            <div
+              class="flex flex-col justify-between gap-4 rounded-xl border border-slate-800 bg-slate-900 p-4 transition-all hover:border-slate-700 sm:flex-row sm:items-center"
+            >
+              <!-- INFORMASI KIRI -->
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span
+                    class="rounded border border-slate-800 bg-slate-950 px-1.5 py-0.5 font-mono text-[8px] font-bold text-slate-500"
+                    x-text="'ID:'+item.id"></span>
+                  <h4 class="text-xs font-bold text-white" x-text="item.title">
+                  </h4>
+                </div>
+
+                <!-- INDIKATOR STATUS MURNI DRIVEN BY PROMOSTATUS + RELATIVETIME -->
+                <div class="pt-1">
+                  <!-- 1. JIKA PROMO SEDANG AKTIF -->
+                  <div
+                    x-show="promoStatus[item.id] === 'ACTIVE'"
+                    class="inline-flex items-center gap-2 rounded-lg border border-rose-500/20 bg-rose-500/10 px-2.5 py-1 text-[10px]"
+                    x-cloak
+                  >
+                    <span class="relative flex h-1.5 w-1.5">
+                      <span
+                        class="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75"
+                      ></span>
+                      <span
+                        class="relative inline-flex h-1.5 w-1.5 rounded-full bg-rose-500"
+                      ></span>
+                    </span>
+                    <span
+                      class="font-mono font-bold tracking-wider text-rose-400 uppercase"
+                      >Flash Sale:</span
+                    >
+                    <span
+                      class="font-mono font-bold text-white"
+                      x-text="countdowns[item.id]"></span>
+                  </div>
+
+                  <!-- 2. GHOST NOTICE: KEDALUWARSA DENGAN PEMBULATAN WAKTU LAMPAU RELATIF -->
+                  <div
+                    x-show="promoStatus[item.id] === 'JUST_EXPIRED'"
+                    class="inline-flex animate-pulse rounded-md border border-rose-800/40 bg-rose-950/40 px-2 py-0.5 font-mono text-[9px] font-bold text-rose-400"
+                    x-cloak
+                  >
+                    ⌛ Telat! Kedaluwarsa <span
+                      class="ml-0.5 underline"
+                      x-text="relativeTime[item.id]"></span>
+                  </div>
+
+                  <!-- 3. HARGA STANDAR -->
+                  <div
+                    x-show="promoStatus[item.id] === 'NORMAL'"
+                    class="text-[9px] text-slate-500 italic"
+                    x-cloak
+                  >
+                    Harga Reguler Standar
+                  </div>
+                </div>
+              </div>
+
+              <!-- SEKTOR HARGA DUA PILIHAN -->
+              <div
+                class="flex items-baseline justify-between gap-2 text-right sm:flex-col sm:items-end sm:justify-center"
+              >
+                <!-- BLOK HARGA DISKON + CORET (Muncul jika promo ACTIVE) -->
+                <div
+                  x-show="promoStatus[item.id] === 'ACTIVE'"
+                  class="space-y-0.5"
+                  x-cloak
+                >
+                  <div
+                    class="font-mono text-[10px] text-slate-500 line-through"
+                    x-text="formatRupiah(item.price)"
+                  >
+                  </div>
+                  <div
+                    class="font-mono text-xs font-bold text-rose-400"
+                    x-text="formatRupiah(item.discount_price)"
+                  >
+                  </div>
+                </div>
+
+                <!-- BLOK HARGA NORMAL (Muncul jika promo JUST_EXPIRED atau NORMAL) -->
+                <div
+                  x-show="promoStatus[item.id] === 'JUST_EXPIRED' || promoStatus[item.id] === 'NORMAL'"
+                  class="font-mono text-xs font-bold text-emerald-400"
+                  x-cloak
+                >
+                  <div
+                    class="font-mono text-xs font-bold text-emerald-400"
+                    x-text="formatRupiah(item.price)"
+                  >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </section>
+    </div>
+
+    <!-- CODE SNIPPET (CLEAN CODE) -->
+    <section class="mb-12" aria-labelledby="code-title">
+      <h2
+        id="code-title"
+        class="mb-3 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Clean Code Blueprint (Temporal Engine Logic)
+      </h2>
+      <article x-data="codeCopier" class="group relative">
+        <button
+          @click="copy()"
+          :class="copied ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900'"
+          class="absolute top-3 right-3 z-10 flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-medium backdrop-blur-sm transition-all duration-200 active:scale-95"
+        >
+          <i x-show="!copied" class="fa-regular fa-copy text-sm"></i>
+          <span x-text="copied ? 'Copied!' : 'Copy'"></span>
+        </button>
+        <pre
+          class="h-100 overflow-auto rounded-2xl border border-slate-800 bg-slate-900 p-5 pr-20 font-mono text-xs leading-relaxed text-slate-300"><code>{clientCode}</code></pre>
+      </article>
+    </section>
+
+    <!-- DOCUMENTATION / EDUKASI KONSEP (DOCS) -->
+    <section
+      class="border-t border-slate-900 pt-8"
+      aria-labelledby="docs-title"
+    >
+      <h2
+        id="docs-title"
+        class="mb-4 text-sm font-semibold tracking-wider text-slate-400 uppercase"
+      >
+        Edukasi Rekayasa Data Berbasis Waktu (Temporal Constraints)
+      </h2>
+
+      <div class="space-y-4 text-xs leading-relaxed text-slate-400">
+        <div class="rounded-xl border border-slate-900 bg-slate-900/20 p-4">
+          <h3
+            class="mb-1.5 flex items-center gap-2 text-xs font-bold text-white"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span> 1. State-Driven
+            UI Transition vs Manual Refresh
+          </h3>
+          <p>
+            Dalam arsitektur aplikasi web modern, perubahan status visual
+            (seperti hilangnya harga coret diskon dan munculnya notifikasi)
+            tidak boleh memaksa browser melakukan pemuatan ulang halaman (*full
+            page refresh*). Dengan menyatukan kendali ke dalam mesin interval
+            tunggal di frontend, sistem terus membandingkan cap waktu milidetik
+            (`ms`) secara berkala dan langsung mengubah *state variable* lokal
+            (`promoStatus`). Hal ini memicu re-render parsial instan tanpa
+            interupsi pada interaksi user.
+          </p>
+        </div>
+
+        <div class="rounded-xl border border-slate-900 bg-slate-900/20 p-4">
+          <h3
+            class="mb-1.5 flex items-center gap-2 text-xs font-bold text-white"
+          >
+            <span class="h-1.5 w-1.5 rounded-full bg-rose-400"></span> 2. Mekanisme
+            Ghost Notice & Pembulatan Waktu Lampau Relatif
+          </h3>
+          <p>
+            *Ghost Notice* adalah taktik UI/UX untuk memberikan umpan balik
+            psikologis (*FOMO effect*) kepada pembeli yang terlambat. Alih-alih
+            langsung menyembunyikan tanda diskon secara kasar, tanda kedaluwarsa
+            dimunculkan selama rentang waktu amortisasi (1 menit). Perhitungan
+            waktu lampaunya dibulatkan menggunakan standar API bawaan JavaScript
+            `Intl.RelativeTimeFormat` dengan setelan bahasa Indonesia (`id`),
+            menghasilkan string terlokalisasi yang rapi dan mudah dibaca secara
+            dinamis.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- BACK FOOTER -->
+    <footer class="mt-12 border-t border-slate-900 pt-6">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 text-xs text-slate-500 transition-colors hover:text-white"
+      >
+        ← Kembali ke Dashboard Sandbox
+      </a>
+    </footer>
+  </main>
+</Layout>
+
+<script define:vars={{ clientCode }}>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('promoApp', (config) => ({
+      items: config.initialItems,
+      loading: false,
+      selectedProductPrice: 0,
+      countdowns: {},
+      promoStatus: {},
+      relativeTime: {}, // STATE BARU: Menyimpan teks pembulatan waktu relatif lampau (cth: "1 menit yang lalu")
+
+      adminForm: {
+        id: '',
+        calcType: 'nominal',
+        calcValue: '',
+        discount_price: 0,
+        promo_ends_at: '',
+      },
+
+      init() {
+        this.items.forEach((item) => {
+          this.countdowns[item.id] = ''
+          this.promoStatus[item.id] = 'NORMAL'
+          this.relativeTime[item.id] = ''
+        })
+
+        setInterval(() => {
+          this.updateAllCountdowns()
+        }, 1000)
+        this.updateAllCountdowns()
+      },
+
+      handleProductChange() {
+        const prod = this.items.find((i) => i.id == this.adminForm.id)
+        if (prod) {
+          this.selectedProductPrice = prod.price
+          this.adminForm.calcValue = ''
+          this.adminForm.discount_price = 0
+
+          if (prod.promo_ends_at) {
+            const date = new Date(prod.promo_ends_at)
+            date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
+            this.adminForm.promo_ends_at = date.toISOString().slice(0, 16)
+          } else {
+            this.adminForm.promo_ends_at = ''
+          }
+        } else {
+          this.selectedProductPrice = 0
+        }
+      },
+
+      calculateDiscountPrice() {
+        if (!this.selectedProductPrice || !this.adminForm.calcValue) return
+        const val = Number(this.adminForm.calcValue)
+
+        if (this.adminForm.calcType === 'nominal') {
+          this.adminForm.discount_price = Math.max(
+            0,
+            this.selectedProductPrice - val,
+          )
+        } else {
+          const cut = (val / 100) * this.selectedProductPrice
+          this.adminForm.discount_price = Math.max(
+            0,
+            Math.round(this.selectedProductPrice - cut),
+          )
+        }
+      },
+
+      // DYNAMIC FUZZY TIME CALCULATOR
+      getFuzzyRelativeTime(endTimeMs) {
+        const now = new Date().getTime()
+        const diffMs = now - endTimeMs
+
+        // Konversi ke menit dan lakukan pembulatan ke atas terdekat (minimal 1 menit)
+        const diffMinutes = Math.max(1, Math.round(diffMs / 60000))
+
+        // Memanfaatkan API Intl bawaan browser untuk melahirkan teks terlokalisasi Indonesia asli
+        const rtf = new Intl.RelativeTimeFormat('id', {
+          numeric: 'always',
+          style: 'long',
+        })
+        return rtf.format(-diffMinutes, 'minute')
+      },
+
+      // SINGLE SOURCE OF TRUTH: MESIN WAKTU PENGENDALI ALL UI KILAT PAS
+      updateAllCountdowns() {
+        const now = new Date().getTime()
+
+        this.items.forEach((item) => {
+          if (!item.discount_price || !item.promo_ends_at) {
+            this.promoStatus[item.id] = 'NORMAL'
+            this.countdowns[item.id] = ''
+            return
+          }
+
+          const end = new Date(item.promo_ends_at).getTime()
+          const diff = end - now
+
+          if (diff > 0) {
+            // KONDISI 1: PROMO AKTIF
+            this.promoStatus[item.id] = 'ACTIVE'
+
+            const hours = Math.floor(diff / (1000 * 60 * 60))
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+
+            const pad = (n) => String(n).padStart(2, '0')
+            this.countdowns[item.id] =
+              `${pad(hours)}j : ${pad(minutes)}m : ${pad(seconds)}s`
+          } else if (now >= end && now < end + 60000) {
+            // KONDISI 2: GHOST NOTICE (Baru kedalwarsa di bawah 1 menit)
+            if (this.promoStatus[item.id] !== 'JUST_EXPIRED') {
+              this.promoStatus[item.id] = 'JUST_EXPIRED'
+              this.countdowns[item.id] = ''
+            }
+            // Update kalkulasi teks relatif secara statis sekali saja
+            this.relativeTime[item.id] = this.getFuzzyRelativeTime(end)
+          } else {
+            // KONDISI 3: NORMAL KEMBALI
+            if (this.promoStatus[item.id] !== 'NORMAL') {
+              this.promoStatus[item.id] = 'NORMAL'
+              this.countdowns[item.id] = ''
+              this.relativeTime[item.id] = ''
+            }
+          }
+        })
+      },
+
+      async submitPromo() {
+        this.loading = true
+        try {
+          const res = await fetch('/api/promo', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: this.adminForm.id,
+              discount_price: this.adminForm.discount_price,
+              promo_ends_at: this.adminForm.promo_ends_at,
+            }),
+          })
+
+          const result = await res.json()
+          if (!res.ok) throw new Error(result.error)
+
+          if (!result.data || result.data.length === 0) {
+            throw new Error(
+              'Gagal menyimpan! DB sukses merespons tapi 0 baris berubah.',
+            )
+          }
+
+          const idx = this.items.findIndex((i) => i.id == this.adminForm.id)
+          if (idx !== -1) {
+            this.items[idx].discount_price = result.data[0].discount_price
+            this.items[idx].promo_ends_at = result.data[0].promo_ends_at
+          }
+
+          alert('Mantra Flash Sale Berhasil Diaktifkan di DB, Bro! ⚡')
+          this.updateAllCountdowns()
+        } catch (err) {
+          alert('❌ EROR NYATA: ' + err.message)
+        } finally {
+          this.loading = false
+        }
+      },
+
+      formatRupiah(num) {
+        return new Intl.NumberFormat('id-ID', {
+          style: 'currency',
+          currency: 'IDR',
+          maximumFractionDigits: 0,
+        }).format(num)
+      },
+    }))
+
+    Alpine.data('codeCopier', () => ({
+      copied: false,
+      codeText: clientCode,
+      copy() {
+        navigator.clipboard.writeText(this.codeText)
+        this.copied = true
+        setTimeout(() => {
+          this.copied = false
+        }, 2000)
+      },
+    }))
+  })
+</script>

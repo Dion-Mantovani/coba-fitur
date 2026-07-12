@@ -7,7 +7,7 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     // 1. Ambil mantra rahasia dari HTTP Headers yang dikirim Supabase
     const authHeader = request.headers.get('x-webhook-secret')
-    const secretKey = process.env.WEBHOOK_SECRET
+    const secretKey = import.meta.env.WEBHOOK_SECRET
 
     // 2. Validasi Keamanan: Jika kosong atau gak cocok, langsung tolak di pintu depan
     if (!authHeader || authHeader !== secretKey) {

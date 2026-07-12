@@ -30,7 +30,7 @@ export const POST: APIRoute = async ({ request }) => {
           'Content-Type': 'application/json',
           // Ini adalah header sakti Vercel untuk menargetkan path spesifik yang mau di-clear cachenya
           'x-vercel-revalidate': '1',
-          'x-vercel-revalidate-paths': '/20-supabase-cache',
+          'x-vercel-revalidate-paths': '/20-caching-webhook',
         },
       },
     )

@@ -1,0 +1,91 @@
+---
+// src/pages/blog/index.astro
+import Layout from '../../layouts/Layout.astro'
+import { getCollection } from 'astro:content'
+
+// 1. Sedot semua artikel dari koleksi 'posts' yang draft-nya false
+const allPosts = await getCollection(
+  'posts',
+  ({ data }: any) => data.draft !== true,
+)
+
+// 2. Urutkan artikel berdasarkan tanggal rilis terbaru
+allPosts.sort(
+  (a: any, b: any) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+)
+---
+
+<Layout title="Jurnal Koding Hardcore - Arsip Blog">
+  <main
+    class="mx-auto min-h-screen max-w-4xl bg-slate-950 px-4 py-12 font-sans text-white"
+  >
+    <!-- HEADER -->
+    <header class="mb-8 border-b border-slate-800 pb-6">
+      <div class="mb-2 flex items-center gap-3">
+        <span
+          class="rounded-md border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-rose-400"
+          >21. KOMPLEKS</span
+        >
+        <h1 class="text-2xl font-bold tracking-tight text-white">
+          Jurnal Koding Hardcore
+        </h1>
+      </div>
+      <p class="text-sm text-slate-400">
+        Daftar tulisan arsitektur yang dibaca langsung dari file Markdown lokal.
+      </p>
+    </header>
+
+    <!-- LIST ARTIKEL -->
+    <div class="space-y-4">
+      {
+        allPosts.map((post: any) => (
+          <a
+            href={`/21-blog/${post.id}`}
+            class="group block rounded-xl border border-slate-800 bg-slate-900 p-4 transition-all hover:border-purple-500/50"
+          >
+            <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+              {post.data.coverImage && (
+                <img
+                  src={post.data.coverImage}
+                  alt={post.data.title}
+                  class="h-16 w-full shrink-0 rounded-lg border border-slate-700 bg-slate-800 object-cover sm:w-24"
+                />
+              )}
+              <div>
+                <span class="font-mono text-[10px] text-slate-500">
+                  {post.data.pubDate.toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })}
+                </span>
+                <h2 class="mt-0.5 text-base font-bold text-white transition-colors group-hover:text-purple-400">
+                  {post.data.title}
+                </h2>
+                <p class="mt-1 line-clamp-1 text-xs text-slate-400">
+                  {post.data.description}
+                </p>
+              </div>
+            </div>
+          </a>
+        ))
+      }
+
+      {
+        allPosts.length === 0 && (
+          <p class="py-8 text-center text-sm text-slate-500 italic">
+            Belum ada artikel yang dipublikasikan, bro.
+          </p>
+        )
+      }
+    </div>
+
+    <footer class="mt-12 border-t border-slate-900 pt-8">
+      <a
+        href="/"
+        class="text-xs text-slate-500 transition-colors hover:text-white"
+        >← Kembali ke Sandbox</a
+      >
+    </footer>
+  </main>
+</Layout>

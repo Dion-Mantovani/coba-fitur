@@ -1,0 +1,85 @@
+---
+// src/pages/blog/[id].astro
+import Layout from '../../layouts/Layout.astro'
+import { getCollection, render } from 'astro:content'
+
+// 1. WAJIB DI STATIC ROUTING: Petakan seluruh ID file markdown agar Astro tahu daftar URL-nya
+export async function getStaticPaths() {
+  const posts = await getCollection('posts')
+  return posts.map((post) => ({
+    params: { id: post.id }, // ID diambil dari nama file (misal: 'pos-1')
+    props: { post },
+  }))
+}
+
+// 2. Tangkap data artikel yang dilempar dari props
+const { post } = Astro.props
+
+// 3. MANTRA ASTRO V6: Gunakan fungsi render terpisah untuk memproduksi komponen <Content />
+const { Content } = await render(post)
+---
+
+<Layout title={`${post.data.title} - Jurnal Koding`}>
+  <main
+    class="bg-slate-955 mx-auto min-h-screen max-w-3xl px-4 py-12 font-sans text-slate-200"
+  >
+    <!-- LINK KEMBALI -->
+    <a
+      href="/21-blog"
+      class="mb-6 inline-block text-xs text-slate-500 transition-colors hover:text-white"
+    >
+      ← Kembali ke Daftar Tulisan
+    </a>
+
+    <!-- HEADER ARTIKEL -->
+    <header class="mb-8 space-y-4">
+      <div class="flex items-center gap-2 font-mono text-xs text-slate-500">
+        <span>Oleh {post.data.author}</span>
+        <span>•</span>
+        <time
+          >{
+            post.data.pubDate.toLocaleDateString('id-ID', { dateStyle: 'long' })
+          }</time
+        >
+      </div>
+      <h1
+        class="text-3xl leading-tight font-extrabold tracking-tight text-white"
+      >
+        {post.data.title}
+      </h1>
+      <p
+        class="rounded-r-lg border-l-2 border-purple-500 bg-slate-900/40 py-2 pr-2 pl-4 text-sm leading-relaxed text-slate-400 italic"
+      >
+        {post.data.description}
+      </p>
+    </header>
+
+    <!-- GAMBAR SAMPUL -->
+    {
+      post.data.coverImage && (
+        <img
+          src={post.data.coverImage}
+          alt={post.data.title}
+          class="border-slate-850 mb-8 h-64 w-full rounded-2xl border bg-slate-900 object-cover sm:h-96"
+        />
+      )
+    }
+
+    <!-- ISI TULISAN MARKDOWN -->
+    <!-- Catatan: Class 'prose prose-invert' butuh Tailwind Typography plugin,
+         tapi sekarang kita pakai style basic dulu biar gak eror -->
+    <article
+      class="space-y-4 text-sm leading-relaxed font-normal text-slate-300"
+    >
+      {/* 4. Tampilkan isi tulisan secara ajaib di sini */}
+      <Content />
+    </article>
+
+    <div
+      class="mt-12 flex items-center justify-between border-t border-slate-900 pt-6 font-mono text-xs text-slate-600"
+    >
+      <span>Status: Published</span>
+      <span>ID: {post.id}</span>
+    </div>
+  </main>
+</Layout>

@@ -1,0 +1,131 @@
+---
+// src/pages/22-multibahasa.astro
+
+import Layout from '../layouts/Layout.astro'
+import { translations } from '../utils/i18n-k22'
+
+const lang = (Astro.currentLocale as 'id' | 'en') || 'id'
+const t = translations[lang]
+---
+
+<Layout title={t.title}>
+  <main
+    class="bg-slate-955 mx-auto max-w-4xl px-4 py-12 font-sans text-slate-100"
+  >
+    <!-- HEADER -->
+    <header class="mb-8 border-b border-slate-800 pb-6">
+      <div
+        class="mb-2 flex flex-col justify-between gap-4 sm:flex-row sm:items-center"
+      >
+        <div class="flex items-center gap-3">
+          <span
+            class="rounded-md border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-blue-400"
+          >
+            22. INTERNASIONAL
+          </span>
+          <h1 class="text-2xl font-bold tracking-tight text-white">
+            {t.title}
+          </h1>
+        </div>
+
+        <!-- TABS SWITCH BAHASA -->
+        <div
+          class="flex w-fit self-start rounded-xl border border-slate-800 bg-slate-900 p-1 sm:self-auto"
+        >
+          <a
+            href="/22-multibahasa"
+            class="bg-purple-650 flex items-center gap-2 rounded-lg border border-purple-500/30 px-3 py-1.5 font-mono text-xs font-bold text-white shadow-sm"
+          >
+            <!-- SVG Bendera Indonesia -->
+            <svg class="h-3 w-4 rounded-sm" viewBox="0 0 3 2">
+              <rect width="3" height="1" fill="#e70012"></rect>
+              <rect width="3" height="1" y="1" fill="#fff"></rect>
+            </svg>
+            ID
+          </a>
+          <a
+            href="/en/22-multibahasa"
+            class="flex items-center gap-2 rounded-lg px-3 py-1.5 font-mono text-xs font-medium text-slate-400 transition-colors hover:text-white"
+          >
+            <!-- SVG Bendera Inggris -->
+            <svg class="h-3 w-4 rounded-sm" viewBox="0 0 50 30">
+              <clipPath id="s"><path d="M0,0 v30 h50 v-30 z"></path></clipPath>
+              <g clip-path="url(#s)">
+                <path d="M0,0 L50,30 M50,0 L0,30" stroke="#fff" stroke-width="6"
+                ></path>
+                <path
+                  d="M0,0 L50,30 M50,0 L0,30"
+                  stroke="#012169"
+                  stroke-width="4"></path>
+                <path d="M25,0 v30 M0,15 h50" stroke="#fff" stroke-width="10"
+                ></path>
+                <path d="M25,0 v30 M0,15 h50" stroke="#C8102E" stroke-width="6"
+                ></path>
+              </g>
+            </svg>
+            EN
+          </a>
+        </div>
+      </div>
+      <p class="text-sm leading-relaxed text-slate-400">
+        {t.subtitle} — {t.description}
+      </p>
+    </header>
+
+    <!-- KONTEN BOX -->
+    <section
+      class="mb-12 space-y-6 rounded-2xl border border-slate-800 bg-slate-900 p-6"
+    >
+      <div
+        class="flex items-center justify-between border-b border-slate-800 pb-4"
+      >
+        <div>
+          <div
+            class="mb-1 font-mono text-[10px] tracking-wider text-slate-500 uppercase"
+          >
+            Status Halaman
+          </div>
+          <div
+            class="bg-slate-955 inline-flex items-center gap-2 rounded-lg border border-slate-950 px-3 py-1.5 font-mono text-xs font-bold text-emerald-400"
+          >
+            <span class="h-2 w-2 animate-ping rounded-full bg-emerald-500"
+            ></span>
+            {t.currentLang}
+          </div>
+        </div>
+      </div>
+
+      <!-- ARTIKEL TAMBAHAN -->
+      <article class="space-y-4 text-sm leading-relaxed text-slate-300">
+        <h3 class="text-base font-bold text-white">
+          Mengapa Memilih Solusi i18n Bawaan?
+        </h3>
+        <p>
+          Banyak developer terjebak menggunakan <i>library</i> pihak ketiga yang membengkakkan
+          ukuran JavaScript di sisi klien. Astro v6 memecahkan masalah ini dengan
+          memindahkan seluruh logika penerjemahan ke proses kompilasi awal (<i
+            >build-time</i
+          >). Hasilnya? Halaman web lo tetap berupa HTML statis yang super
+          enteng.
+        </p>
+        <p>
+          Dengan memisahkan routing berbasis sub-folder seperti <code
+            class="rounded bg-slate-950 px-1.5 py-0.5 font-mono text-xs text-purple-400"
+            >/en/</code
+          >, mesin pencari seperti Google dapat merayapi dan mengindeks situs lo
+          dengan struktur SEO internasional yang sempurna tanpa konfigurasi
+          tambahan yang rumit.
+        </p>
+      </article>
+    </section>
+
+    <footer class="border-t border-slate-900 pt-6">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 text-xs text-slate-500 transition-colors hover:text-white"
+      >
+        {t.backHome}
+      </a>
+    </footer>
+  </main>
+</Layout>

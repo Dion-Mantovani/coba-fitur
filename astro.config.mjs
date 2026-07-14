@@ -16,11 +16,8 @@ export default defineConfig({
   // },
 
   output: 'static',
-
   adapter: vercel(),
-
   site: 'https://coba-fitur.vercel.app', // Pastikan atribut site ini ada
-
   vite: {
     plugins: [tailwindcss()],
   },
@@ -31,6 +28,16 @@ export default defineConfig({
   image: {
     service: {
       entrypoint: 'astro/assets/services/sharp',
+    },
+  },
+
+  i18n: {
+    defaultLocale: 'id', // Bahasa utama/default: Indonesia
+    locales: ['id', 'en'], // Daftar bahasa yang didukung
+    routing: {
+      prefixDefaultLocale: false,
+      // FALSE artinya: bahasa default (id) GAK PERLU pakai /id/ di URL-nya.
+      // Jadi halaman Indonesia tetap di /pages/fitur-22, sedangkan Inggris di /pages/en/fitur-22.
     },
   },
 })

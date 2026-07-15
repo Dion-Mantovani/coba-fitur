@@ -1,0 +1,313 @@
+---
+// src/pages/23-booking-system/index.astro
+export const prerender = false // Mode Server Dinamis (SSR)
+
+import Layout from '../../layouts/Layout.astro'
+import { supabase } from '../../utils/supabase'
+
+// 1. Data Master Ruangan & Slot Waktu yang Dikunci
+const ROOMS = [
+  'Tesla Room',
+  'Newton Room',
+  'Einstein Room',
+  'Galileo Room',
+  'Darwin Room',
+  'Curie Room',
+  'Hawking Room',
+  'DaVinci Room',
+]
+
+const SLOTS = [
+  { id: 'Pagi', label: 'Pagi (08:00 - 11:00 WIB)' },
+  { id: 'Siang', label: 'Siang (11:30 - 14:30 WIB)' },
+  { id: 'Sore', label: 'Sore (15:00 - 18:00 WIB)' },
+  { id: 'Malam', label: 'Malam (19:00 - 22:00 WIB)' },
+]
+
+// 2. Baca Filter Tanggal dari URL
+const url = new URL(Astro.request.url)
+const selectedDate =
+  url.searchParams.get('date') || new Date().toISOString().split('T')[0]
+
+// 3. 🧹 LOGIKA TUKANG BERSIH-BERSIH (AUTO-PRUNE)
+// Hapus semua data 'unpaid' di Supabase yang umurnya sudah melebihi 1 menit (60 detik)
+const cutoffTime = new Date(Date.now() - 60000).toISOString()
+
+await supabase
+  .from('meetings_booking')
+  .delete()
+  .eq('status', 'unpaid')
+  .lt('created_at', cutoffTime) // .lt artinya Less Than (dibuat sebelum waktu cutoff)
+
+// 4. Setelah dibersihkan, baru kita tarik data booking yang valid untuk di-render ke Grid UI
+const { data: bookedData, error: fetchError } = await supabase
+  .from('meetings_booking')
+  .select('room_name, time_slot, status')
+  .eq('booking_date', selectedDate)
+
+// Karena data expired sudah disapu bersih di atas, data yang ditarik di sini dijamin 100% aktif!
+const bookedSet = new Set(
+  bookedData?.map((b) => `${b.room_name}|${b.time_slot}`) || [],
+)
+
+// 5. Logika Handle POST Form (Saat User Klik Pesan Ruangan)
+let errorMessage = ''
+
+if (Astro.request.method === 'POST') {
+  try {
+    const formData = await Astro.request.formData()
+    const booker_name = formData.get('booker_name')?.toString() || ''
+    const booker_email = formData.get('booker_email')?.toString() || ''
+    const booker_whatsapp = formData.get('booker_whatsapp')?.toString() || ''
+    const room_name = formData.get('room_name')?.toString() || ''
+    const time_slot = formData.get('time_slot')?.toString() || ''
+
+    // Validasi Sederhana: Wajib diisi semua
+    if (
+      !booker_name ||
+      !booker_email ||
+      !booker_whatsapp ||
+      !room_name ||
+      !time_slot
+    ) {
+      errorMessage = 'Waduh bro, isi dulu semua form-nya jangan dikosongin!'
+    } else {
+      // Gass masukkan ke database Supabase
+      const { data, error } = await supabase
+        .from('meetings_booking')
+        .insert([
+          {
+            booker_name,
+            booker_email,
+            booker_whatsapp,
+            room_name,
+            time_slot,
+            booking_date: selectedDate,
+          },
+        ])
+        .select()
+
+      if (error) {
+        // Jika kena CONSTRAINT UNIQUE dari database yang kita buat kemarin
+        if (error.code === '23505') {
+          errorMessage =
+            'Waduh! Slot ruangan ini baru aja dibooking orang lain, pilih slot lain bro!'
+        } else {
+          errorMessage = error.message
+        }
+      } else if (data && data[0]) {
+        // Jika sukses, lempar user langsung ke halaman Invoice Dummy bawa ID booking-nya
+        return Astro.redirect(`/23-booking-system/invoice?id=${data[0].id}`)
+      }
+    }
+  } catch (e: any) {
+    errorMessage = e.message
+  }
+}
+---
+
+<Layout title="23. Realtime Booking Grid System">
+  <main
+    class="bg-slate-955 mx-auto max-w-6xl px-4 py-12 font-sans text-slate-100"
+  >
+    <!-- HEADER -->
+    <header
+      class="mb-8 flex flex-col items-start justify-between gap-4 border-b border-slate-800 pb-6 md:flex-row md:items-center"
+    >
+      <div>
+        <div class="mb-2 flex items-center gap-3">
+          <span
+            class="rounded-md border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-rose-400"
+            >23. KOMPLEKS</span
+          >
+          <h1 class="text-2xl font-bold tracking-tight text-white">
+            Coworking Space Room Booking
+          </h1>
+        </div>
+        <p class="text-sm leading-relaxed text-slate-400">
+          Scan QR ➔ Pilih Ruangan Mulus ➔ Kunci Slot Tanpa Antre.
+        </p>
+      </div>
+
+      <!-- FILTER TANGGAL (Mengubah parameter URL saat tanggal diganti) -->
+      <div
+        class="flex w-full items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 p-3 md:w-auto"
+      >
+        <label class="font-mono text-xs font-bold text-slate-400"
+          >PILIH TANGGAL:</label
+        >
+        <input
+          type="date"
+          value={selectedDate}
+          min={new Date().toISOString().split('T')[0]}
+          class="rounded border border-slate-800 bg-slate-950 px-2 py-1 font-mono text-xs text-white focus:border-emerald-500 focus:outline-none"
+          onchange="window.location.search = '?date=' + this.value"
+        />
+      </div>
+    </header>
+
+    {
+      errorMessage && (
+        <div class="mb-6 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 font-mono text-xs text-rose-400">
+          ⚠️ {errorMessage}
+        </div>
+      )
+    }
+
+    <!-- UTAMA: GRID DI KIRI, FORM DI KANAN -->
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
+      <!-- 🗺️ SEBELAH KIRI: VISUAL SIMULASI RUANGAN & SLOT WAKTU -->
+      <section class="space-y-4 lg:col-span-7">
+        <h2
+          class="flex items-center gap-2 text-xs font-semibold tracking-wider text-slate-400 uppercase"
+        >
+          🗺️ Peta Ketersediaan Ruangan <span
+            class="text-[10px] font-normal text-slate-500 lowercase"
+            >({selectedDate})</span
+          >
+        </h2>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {
+            ROOMS.map((room) => (
+              <div class="space-y-3 rounded-2xl border border-slate-800 bg-slate-900 p-4">
+                <h3 class="border-b border-slate-800 pb-2 text-sm font-bold text-white">
+                  {room}
+                </h3>
+
+                <div class="grid grid-cols-2 gap-2">
+                  {SLOTS.map((slot) => {
+                    const isBooked = bookedSet.has(`${room}|${slot.id}`)
+                    return (
+                      <div
+                        class={`flex h-14 flex-col justify-between rounded-xl border p-2 text-center font-mono text-[10px] transition-all ${
+                          isBooked
+                            ? 'border-rose-500/30 bg-rose-500/10 text-rose-400'
+                            : 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400'
+                        }`}
+                      >
+                        <span class="font-bold">{slot.id}</span>
+                        <span
+                          class={`rounded px-1 py-0.5 text-[8px] font-semibold tracking-wide uppercase ${
+                            isBooked ? 'bg-rose-500/20' : 'bg-emerald-500/20'
+                          }`}
+                        >
+                          {isBooked ? '🔴 Terisi' : '🟢 Kosong'}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- 📝 SEBELAH KANAN: FORMULIR INPUT PEMESANAN -->
+      <section class="lg:col-span-5">
+        <div
+          class="sticky top-6 space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-6"
+        >
+          <h2
+            class="border-b border-slate-800 pb-3 text-sm font-bold tracking-tight text-white"
+          >
+            ✍️ Formulir Sewa Ruangan
+          </h2>
+
+          <form method="POST" class="space-y-4 font-mono text-xs">
+            <div>
+              <label class="mb-1.5 block font-bold text-slate-400"
+                >Nama Pemesan</label
+              >
+              <input
+                type="text"
+                name="booker_name"
+                required
+                placeholder="Contoh: Alex Siregar"
+                class="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 text-white focus:border-emerald-500 focus:outline-none"
+              />
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label class="mb-1.5 block font-bold text-slate-400"
+                  >Email Active</label
+                >
+                <input
+                  type="email"
+                  name="booker_email"
+                  required
+                  placeholder="alex@gmail.com"
+                  class="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 text-white focus:border-emerald-500 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label class="mb-1.5 block font-bold text-slate-400"
+                  >No. WhatsApp</label
+                >
+                <input
+                  type="tel"
+                  name="booker_whatsapp"
+                  required
+                  placeholder="08123456789"
+                  class="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 text-white focus:border-emerald-500 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="mb-1.5 block font-bold text-slate-400"
+                >Pilih Ruangan</label
+              >
+              <select
+                name="room_name"
+                required
+                class="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 text-white focus:border-emerald-500 focus:outline-none"
+              >
+                <option value="">-- Pilih Salah Satu --</option>
+                {ROOMS.map((room) => <option value={room}>{room}</option>)}
+              </select>
+            </div>
+
+            <div>
+              <label class="mb-1.5 block font-bold text-slate-400"
+                >Pilih Slot Waktu</label
+              >
+              <select
+                name="time_slot"
+                required
+                class="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 text-white focus:border-emerald-500 focus:outline-none"
+              >
+                <option value="">-- Pilih Waktu Rapat --</option>
+                {
+                  SLOTS.map((slot) => (
+                    <option value={slot.id}>{slot.label}</option>
+                  ))
+                }
+              </select>
+            </div>
+
+            <div class="pt-2">
+              <button
+                type="submit"
+                class="w-full cursor-pointer rounded-xl bg-emerald-600 px-4 py-3 text-center text-sm font-bold text-white shadow-lg shadow-emerald-900/20 transition-colors hover:bg-emerald-700"
+              >
+                Kunci & Bayar Sekarang (Rp 150k) 🚀
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </div>
+
+    <footer class="mt-12 border-t border-slate-900 pt-6">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 text-xs text-slate-500 transition-colors hover:text-white"
+      >
+        ← Kembali ke Dashboard Sandbox
+      </a>
+    </footer>
+  </main>
+</Layout>

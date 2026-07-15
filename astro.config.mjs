@@ -36,8 +36,6 @@ export default defineConfig({
     locales: ['id', 'en'], // Daftar bahasa yang didukung
     routing: {
       prefixDefaultLocale: false,
-      // FALSE artinya: bahasa default (id) GAK PERLU pakai /id/ di URL-nya.
-      // Jadi halaman Indonesia tetap di /pages/fitur-22, sedangkan Inggris di /pages/en/fitur-22.
     },
   },
 })

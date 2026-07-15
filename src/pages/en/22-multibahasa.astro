@@ -1,5 +1,6 @@
 ---
 // src/pages/en/22-multibahasa.astro
+export const prerender = true
 
 import Layout from '../../layouts/Layout.astro'
 import { translations } from '../../utils/i18n-k22'
@@ -19,10 +20,9 @@ const t = translations[lang]
       >
         <div class="flex items-center gap-3">
           <span
-            class="rounded-md border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-blue-400"
+            class="rounded-md border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-rose-400"
+            >22. KOMPLEX</span
           >
-            22. INTERNATIONAL
-          </span>
           <h1 class="text-2xl font-bold tracking-tight text-white">
             {t.title}
           </h1>

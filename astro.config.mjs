@@ -20,6 +20,13 @@ export default defineConfig({
   site: 'https://coba-fitur.vercel.app', // Pastikan atribut site ini ada
   vite: {
     plugins: [tailwindcss()],
+
+    server: {
+      allowedHosts: [
+        'blandness-shoplift-reproduce.ngrok-free.dev', // 👈 Daftarkan domain Ngrok lo di sini
+        'localhost',
+      ],
+    },
   },
 
   // Tambahkan ini untuk menambahkan plugin alpinejs dan sitemap

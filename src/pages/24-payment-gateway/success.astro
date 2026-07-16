@@ -1,0 +1,95 @@
+---
+// src/pages/24-payment-gateway/success.astro
+export const prerender = false; // Wajib SSR karena nge-cek data real-time di DB
+
+import Layout from '../../layouts/Layout.astro';
+import { supabase } from '../../utils/supabase';
+
+const url = new URL(Astro.request.url);
+const externalId = url.searchParams.get('external_id');
+
+if (!externalId) {
+  return Astro.redirect('/24-payment-gateway');
+}
+
+// Tarik data tiket dari database berdasarkan external_id dari Xendit
+const { data: ticket, error } = await supabase
+  .from('event_tickets')
+  .select('*')
+  .eq('external_id', externalId)
+  .single();
+
+if (error || !ticket) {
+  return Astro.redirect('/24-payment-gateway');
+}
+---
+
+<Layout title="24. Status Pembayaran Tiket">
+  <main class="bg-slate-955 mx-auto max-w-2xl px-4 py-12 font-sans text-slate-100 min-h-screen">
+
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 space-y-6 shadow-xl relative overflow-hidden">
+      <!-- AKSEN STATUS WARNA DILAYAR -->
+      <div class={`absolute top-0 left-0 right-0 h-1.5 ${ticket.status === 'PAID' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`}></div>
+
+      <div class="text-center space-y-2">
+        {ticket.status === 'PAID' ? (
+          <div class="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-mono font-bold text-emerald-400">
+            🎉 PEMBAYARAN DIKONFIRMASI LUNAS
+          </div>
+        ) : (
+          <div class="inline-flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-xs font-mono font-bold text-amber-400">
+            ⏳ MENUNGGU KONFIRMASI WEBHOOK
+          </div>
+        )}
+        <h1 class="text-xl font-extrabold text-white tracking-tight">Status Tiket Konferensi</h1>
+        <p class="text-[10px] font-mono text-slate-500">Invoice: {ticket.external_id}</p>
+      </div>
+
+      <!-- KONDISI LUNAS: TAMPILKAN E-TICKET DIGITAL -->
+      {ticket.status === 'PAID' ? (
+        <div class="border-2 border-dashed border-slate-800 bg-slate-950 p-6 rounded-xl space-y-4 font-mono relative">
+          <!-- Hiasan Gunting Tiket -->
+          <div class="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-900 rounded-full border border-slate-800"></div>
+          <div class="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-900 rounded-full border border-slate-800"></div>
+
+          <div class="text-center">
+            <div class="text-[10px] text-amber-400 font-bold tracking-widest uppercase">OFFICIAL ACCESS PASS TICKET</div>
+            <div class="text-xl font-black text-white mt-1">🎫 SANDBOX DEV CONF 2026</div>
+          </div>
+
+          <div class="border-t border-slate-850 my-2"></div>
+
+          <div class="grid grid-cols-2 gap-2 text-[11px]">
+            <div><span class="text-slate-500">NAMA:</span> <div class="text-white font-bold">{ticket.customer_name}</div></div>
+            <div><span class="text-slate-500">KATEGORI:</span> <div class="text-purple-400 font-bold">{ticket.ticket_type}</div></div>
+            <div class="mt-2"><span class="text-slate-500">STATUS PASS:</span> <div class="text-emerald-400 font-bold">ACTIVE</div></div>
+            <div class="mt-2"><span class="text-slate-500">KODE TIKET:</span> <div class="text-white font-bold tracking-wider">SBDC-{ticket.id}</div></div>
+          </div>
+        </div>
+      ) : (
+        /* KONDISI APABILA USER BALIK DULUAN TAPI WEBHOOK BELUM MENDARAT */
+        <div class="bg-slate-950 border border-slate-850 rounded-xl p-5 text-center space-y-3 font-mono text-xs">
+          <p class="text-slate-300 leading-relaxed">
+            Sistem simulasi Xendit berhasil mengeksekusi uang Anda. Saat ini server kami sedang menunggu kiriman data konfirmasi lunas otomatis (*Webhook callback*) dari Xendit.
+          </p>
+          <button onclick="window.location.reload()" class="inline-flex bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold py-1.5 px-4 rounded-lg cursor-pointer transition-colors text-[10px]">
+            🔄 Refresh Status Tiket
+          </button>
+        </div>
+      )}
+
+      <!-- RINGKASAN DATA -->
+      <div class="bg-slate-950/40 border border-slate-850 rounded-xl p-4 space-y-2 font-mono text-xs text-slate-400">
+        <div class="flex justify-between"><span>Email Pembeli:</span><span class="text-white">{ticket.customer_email}</span></div>
+        <div class="flex justify-between"><span>Nominal Dibayar:</span><span class="text-amber-400 font-bold">Rp {ticket.amount.toLocaleString('id-ID')}</span></div>
+      </div>
+
+      <div class="pt-2 text-center">
+        <a href="/24-payment-gateway" class="inline-block text-xs font-mono text-slate-500 hover:text-white transition-colors">
+          ← Kembali ke Form Utama
+        </a>
+      </div>
+
+    </div>
+  </main>
+</Layout>

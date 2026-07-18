@@ -7,15 +7,22 @@ import { supabase } from '../../utils/supabase'
 import { Xendit } from 'xendit-node'
 
 // 1. Inisialisasi SDK Xendit menggunakan Kunci Rahasia dari file .env
-const xenditClient = new Xendit({
-  secretKey: import.meta.env.XENDIT_SECRET_KEY || '',
-})
+const secretKey = import.meta.env.XENDIT_SECRET_KEY
+let xenditClient: any = null
+
+if (secretKey) {
+  xenditClient = new Xendit({ secretKey })
+}
 
 let errorMessage = ''
 
 // 2. Logika Handle POST Form (Saat User Klik Beli Tiket)
 if (Astro.request.method === 'POST') {
   try {
+    if (!xenditClient) {
+      throw new Error('Secret Key Xendit belum terkonfigurasi di server cloud!')
+    }
+
     const formData = await Astro.request.formData()
     const customer_name = formData.get('customer_name')?.toString() || ''
     const customer_email = formData.get('customer_email')?.toString() || ''
